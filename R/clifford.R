@@ -124,11 +124,15 @@
     clifford(sapply(seq_along(v),function(i){seq_len(n)[-i]},simplify=FALSE),v)
 }
 
-`is.antivector` <- function(C){
-    (nterms(C)==1) || (is.homog(C) && (max(unlist(terms(C)))==maxyterm(C)))
+`is.antivector` <- function(C, include.pseudoscalar=FALSE){
+
+  if(!is.homog(C)){return(FALSE)}
+  if(include.pseudoscalar && is.pseudoscalar(C)){return(TRUE)}
+  return(grades(C)[1] == maxyterm(C)-1)
 }
 
 `basis` <- function(n,x=1){clifford(list(n),x)}
+`e` <- basis
 
 `rcliff` <- function(n=9,d=6,g=4,include.fewer=TRUE){
   if(include.fewer){
@@ -235,8 +239,10 @@
     clifford(apply(expand.grid(rep(list(0:1),n))>0,1,which),1)
 }
 
-`zap` <- function(x,digits=getOption("digits")){
-  clifford(terms(x),base::zapsmall(coeffs(x),digits=digits))
+`zap` <- function(x,drop=TRUE,digits=getOption("digits")){
+    out <- clifford(terms(x),base::zapsmall(coeffs(x),digits=digits))
+    if(drop){out <- drop(out)}
+    return(out)
 }
 
 `catterm` <- function(a){

@@ -83,6 +83,9 @@ checker1 <- function(A){
   expect_true(is.odd(A - evenpart(A)))
   expect_true(is.even(A - oddpart(A)))
 
+  expect_visible(summary(A))
+  expect_visible(as.character(A))
+  expect_visible(as.character(-A))
   
 }   # checker1() closes
   
@@ -152,6 +155,9 @@ checker2 <- function(A,B){
 
   expect_true(A %X% B + B %X% A == as.clifford(0))
 
+  ## Now some checks of the Dorst products:
+  expect_true(Conj(A %|_% B) == Conj(B) %_|% Conj(A))
+  expect_true(A %_|% B + A %|_%B == A %star% B + A %o% B)
 
 }   # checker2() closes
 
@@ -186,7 +192,18 @@ checker3 <- function(A,B,C){
       }
     }
   }
-}
+
+  ## Following checks from Chisholm, "Geometric algebra", arXiv:1205.5935v1, 27 May 2012
+  expect_true(A %_|% (B %|_% C) == (A %_|% B) %|_% C)  # eqn 83
+  expect_true(A %_|% (B %_|% C) == (A %^%  B) %_|% C)
+  expect_true(A %|_% (B %^%  C) == (A %|_% B) %|_% C)
+  
+  ## Following checks from Dorst 
+  expect_true((A %^% B) %star% C == A %star% (B %_|% C))   # 2.2.4  NB the LHS takes much longer to evaluate than the RHS
+  expect_true(C %star% (B %^% C) == (C %|_% B) %star% C)
+
+
+}  # checker3() closes
   
 for(i in 1:10){
     for(sigs in 0:2){

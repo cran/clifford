@@ -34,8 +34,8 @@ clifford remove_zeros(clifford &C){
 
 clifford prepare(const List &L, const NumericVector &d, const NumericVector &m){
     clifford out;
-    const unsigned n=L.size();
-    for(int i=0 ; i<n ; i++){
+    const size_t n=L.size();
+    for(size_t i=0 ; i<n ; i++){
         if(d[i] != 0){
             Rcpp::IntegerVector iv = as<Rcpp::IntegerVector> (L[i]);
             blade b;
@@ -107,20 +107,20 @@ clifford c_add(clifford cliff1, clifford cliff2){
 blade_and_sign juxtapose(blade b1, blade b2, const signed int signature){//juxtaposes two blades, returns reduction and sign
     int sign = 1;
     blade bout;
-    const unsigned int m = max(b1.size(),b2.size());
+    const size_t m = max(b1.size(),b2.size());
 
     b1.resize(m, false);
     b2.resize(m, false);
     bout.resize(m, false);
 
-    for(int i=0 ; i<m ; ++i){
+    for(size_t i=0 ; i<m ; ++i){
         
         if       (((bool)~b1[i]) & ((bool)~b2[i])){ bout[i] = false;  // neither
         } else if(((bool) b1[i]) & ((bool)~b2[i])){ bout[i] = true;   // just b1
         } else if(((bool)~b1[i]) & ((bool) b2[i])){ bout[i] = true;   // just b2
         } else if(((bool) b1[i]) & ((bool) b2[i])){ bout[i] = false;  // both, but...
             if(signature>0){ // ...swap sign!  
-                if(i>signature){  // NB check for off-by-one error
+                if((signed int) i > (signed int) signature){ // NB check for off-by-one error
                     sign *= -1;
                 }
             } else if(signature < 0){
@@ -131,8 +131,8 @@ blade_and_sign juxtapose(blade b1, blade b2, const signed int signature){//juxta
         }
     }
         
-    for(int i=0 ; i<m ; ++i){
-        for(int j=i ; j<m ; ++j){
+    for(size_t i=0 ; i<m ; ++i){
+        for(size_t j=i ; j<m ; ++j){
             if((b2[i] & b1[j]) && (i<j)){
                 sign *= -1;}
         }
@@ -140,7 +140,7 @@ blade_and_sign juxtapose(blade b1, blade b2, const signed int signature){//juxta
     return std::make_tuple(bout,sign);
 }
 
-clifford c_prod(const clifford C1, const clifford C2, const NumericVector signature){
+clifford c_general_prod(const clifford C1, const clifford C2, const NumericVector signature, bool (*chooser)(const blade, const blade)){
 
     clifford out;
     clifford::const_iterator ic1,ic2;
@@ -150,28 +150,15 @@ clifford c_prod(const clifford C1, const clifford C2, const NumericVector signat
         const blade b1 = ic1->first;
         for(ic2=C2.begin(); ic2 != C2.end(); ++ic2){
             const blade b2 = ic2->first;
-            tie(b, sign) = juxtapose(b1, b2, signature[0]);
-            out[b] += sign*(ic1->second)*(ic2->second); // the meat
+            if(chooser(b1,b2)){
+                tie(b, sign) = juxtapose(b1, b2, signature[0]);
+                out[b] += sign*(ic1->second)*(ic2->second); // the meat
+            }
         }
     }
     return remove_zeros(out);
 }
 
-clifford c_power(const clifford C, const NumericVector &power, const NumericVector &signature){  // p for power
-    clifford out;
-    unsigned int p = power[0];
-
-    if(p<1){throw std::range_error("power cannot be <1");} 
-    if(p==1){
-        return C;
-    } else {
-        out = C; 
-        for( ; p>1; p--){
-            out = c_prod(C,out,signature);
-        }
-    }
-    return out;
-}
 
 bool c_equal(clifford C1, clifford C2){
     // modelled on spray_equality()
@@ -183,24 +170,18 @@ bool c_equal(clifford C1, clifford C2){
         blade b = ic->first;
         if(C1[b] != C2[b]){
             return false;
-        } else {
-            C2.erase(b);
         }
     }
     
-    if(C2.empty()){
-        return true;
-    } else {
-        return false;
-    }
+    return true;
 }
 
 clifford c_grade(const clifford C, const NumericVector &n){
     clifford out;
-    for(int i=0 ; i < n.length() ; ++i){
+    for(size_t i=0 ; i < (size_t) n.length() ; ++i){
         for(clifford::const_iterator ic=C.begin() ; ic != C.end() ; ++ic){
             const blade b = ic->first;
-            if(b.count() == (int) n[i]){
+            if(b.count() == (size_t) n[i]){
                 out[b] = ic->second;
             }
         }
@@ -213,11 +194,11 @@ NumericVector c_coeffs_of_blades(clifford C,
                                  const NumericVector &m
                                  ){  
     Rcpp::NumericVector out;
-    for(unsigned int i=0 ; i< B.size() ; ++i){
+    for(size_t i=0 ; i < (size_t) B.size() ; ++i){
         blade b;
         b.resize(m[0]+1);  //off-by-one; note that this code also appears in prepare()
         const IntegerVector iv = B[i];
-        for(int j=0 ; j < iv.size(); j++){
+        for(size_t j=0 ; j < (size_t) iv.size(); j++){
             b[iv[j]] = 1;
         }
         out.push_back(C[b]);
@@ -225,41 +206,19 @@ NumericVector c_coeffs_of_blades(clifford C,
     return out;
 }
 
-clifford outerprod(const clifford C1, const clifford C2, const NumericVector &signature){
-    clifford out;
-    clifford::const_iterator ic1,ic2;
-    blade b;
-    int sign;
-    for(ic1=C1.begin(); ic1 != C1.end(); ++ic1){
-        const blade b1 = ic1->first;
-        for(ic2=C2.begin(); ic2 != C2.end(); ++ic2){
-            const blade b2 = ic2->first;
-            if(((b1&b2).count() == 0) ){
-                tie(b, sign) = juxtapose(b1, b2, signature[0]);
-                out[b] += sign*(ic1->second)*(ic2->second); // the meat
-            }
-        }
-    }
-    return remove_zeros(out);
-}
+bool geometricproductchooser(const blade b1, const blade b2){return true;}
+bool outerproductchooser    (const blade b1, const blade b2){return ((  b1 &  b2).count() == 0)                                                                  ;}
+bool innerproductchooser    (const blade b1, const blade b2){return ((((b1 & ~b2).count() == 0) | ((~b1 & b2).count() == 0)) && (b1.count()>0) && (b2.count()>0));}
+bool fatdotchooser          (const blade b1, const blade b2){return ((( b1 & ~b2).count() == 0) | ((~b1 & b2).count() == 0))                                     ;}
+bool lefttickchooser        (const blade b1, const blade b2){return ( ( b1 & ~b2).count() == 0)                                                                  ;}
+bool righttickchooser       (const blade b1, const blade b2){return ( (~b1 &  b2).count() == 0)                                                                  ;}
 
-clifford innerprod(const clifford C1, const clifford C2, const NumericVector &signature){
-    clifford out;
-    clifford::const_iterator ic1,ic2;
-    blade b;
-    int sign;
-    for(ic1=C1.begin(); ic1 != C1.end(); ++ic1){
-        const blade b1 = ic1->first;
-        for(ic2=C2.begin(); ic2 != C2.end(); ++ic2){
-            const blade b2 = ic2->first;
-            if((((b1 & ~b2).count() == 0) | ((~b1 & b2).count() == 0)) && (b1.count()>0) && (b2.count()>0)){
-                tie(b, sign) = juxtapose(b1, b2, signature[0]);
-                out[b] += sign*(ic1->second)*(ic2->second); // the meat
-            }
-        }
-    }
-    return remove_zeros(out);
-}
+clifford c_geometricprod(const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &geometricproductchooser);}
+clifford outerprod      (const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &outerproductchooser    );}
+clifford innerprod      (const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &innerproductchooser    );}
+clifford fatdotprod     (const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &fatdotchooser          );}
+clifford lefttickprod   (const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &lefttickchooser        );}
+clifford righttickprod  (const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &righttickchooser       );}
 
 clifford overwrite(clifford C1, const clifford C2){  // C1[] <- C2
     clifford::const_iterator i;
@@ -267,4 +226,20 @@ clifford overwrite(clifford C1, const clifford C2){  // C1[] <- C2
         C1[i->first] = i->second;
     }
     return C1;
+}
+
+clifford c_power(const clifford C, const NumericVector &power, const NumericVector &signature){  // p for power
+    clifford out;
+    unsigned int p = power[0];
+
+    if(p<1){throw std::range_error("power cannot be <1");} 
+    if(p==1){
+        return C;
+    } else {
+        out = C; 
+        for( ; p>1; p--){
+            out = c_geometricprod(C,out, signature);
+        }
+    }
+    return out;
 }

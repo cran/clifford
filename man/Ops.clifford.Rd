@@ -5,29 +5,48 @@
 \alias{\%star\%}
 \alias{\% \%}
 \alias{\%euc\%}
+\alias{\%o\%}
+\alias{\%_|\%}
+\alias{\%|_\%}
 \alias{\%.\%.clifford}
 \alias{\%^\%.clifford}
 \alias{\%X\%.clifford}
 \alias{\%star\%.clifford}
 \alias{\% \%.clifford}
 \alias{\%euc\%.clifford}
+\alias{\%o\%.clifford}
+\alias{\%_|\%.clifford}
+\alias{\%|_\%.clifford}
 \alias{Ops.clifford}
 \alias{Ops}
 \alias{clifford_negative}
 \alias{clifford_times_clifford}
+\alias{geoprod}
+\alias{geometric_prod}
+\alias{geometric_product}
 \alias{clifford_times_scalar}
 \alias{clifford_plus_clifford}
 \alias{clifford_plus_numeric}
 \alias{clifford_plus_scalar}
 \alias{clifford_star_clifford}
+\alias{star}
 \alias{clifford_cross_clifford}
+\alias{cross}
+\alias{clifford_fatdot_clifford}
+\alias{fatdot}
+\alias{clifford_lefttick_clifford}
+\alias{lefttick}
+\alias{clifford_righttick_clifford}
+\alias{righttick}
 \alias{clifford_power_scalar}
 \alias{clifford_eq_clifford}
 \alias{clifford_inverse}
 \alias{dot}
 \alias{wedge}
 \alias{clifford_dot_clifford}
+\alias{cliffdotprod}
 \alias{clifford_wedge_clifford}
+\alias{wedge}
 \alias{maxyterm}
 \alias{scalprod}
 \alias{scalar_product}
@@ -43,13 +62,16 @@
 \usage{
 \method{Ops}{clifford}(e1, e2)
 clifford_negative(C)
-clifford_times_clifford(C1,C2)
+geoprod(C1,C2)
 clifford_times_scalar(C,x)
 clifford_plus_clifford(C1,C2)
 clifford_eq_clifford(C1,C2)
 clifford_inverse(C)
-clifford_dot_clifford(C1,C2)
-clifford_wedge_clifford(C1,C2)
+cliffdotprod(C1,C2)
+fatdot(C1,C2)
+lefttick(C1,C2)
+righttick(C1,C2)
+wedge(C1,C2)
 scalprod(C1,C2=rev(C1),drop=TRUE)
 eucprod(C1,C2=C1,drop=TRUE)
 maxyterm(C1,C2=as.clifford(0))
@@ -59,6 +81,9 @@ C1 \%X\% C2
 C1 \%star\% C2
 C1 \% \% C2
 C1 \%euc\% C2
+C1 \%o\% C2
+C1 \%_|\% C2
+C1 \%|_\% C2
 }
 \arguments{
   \item{e1,e2,C,C1,C2}{Objects of class \code{clifford}}
@@ -79,34 +104,50 @@ C1 \%euc\% C2
   in the terms of its arguments.
 
   The package has several binary operators:
-  \itemize{
-    \item \code{x * y}, \eqn{xy}{xy}, geometric product, also
-    \code{clifford_times_clifford(x,y)}.  Because geometric product is
-    often indicated by juxtaposition, idiom \code{x \% \% y} returns the
-    geometric product.
-    \item \code{x \%.\% y}, \eqn{x\cdot y}{x.y}, inner product, also
-    \code{clifford_dot_clifford(x,y)} 
-    \item \code{x \%^\% y}, \eqn{x\wedge y}{x^y}, outer product, also
-    \code{clifford_wedge_clifford(x,y)} 
-    \item \code{x \%X\% y}, \eqn{x\times y}{x X y}, cross product, also
-    \code{clifford_cross_clifford(x,y)} 
-    \item \code{x \%star\% y}, \eqn{x*y}, scalar product, also
-    \code{clifford_star_clifford()}
-    \item \code{x \%euc\% y}, \eqn{x\ast y}, the Euclidean product, also
-    \code{eucprod(x,y)}
+
+  \tabular{lll}{\cr
+    Geometric product \tab \code{A*B = geoprod(A,B)} \tab
+    \eqn{\displaystyle AB=\sum_{r,s}\left\langle A\right\rangle_r\left\langle
+      B\right\rangle_s}{see PDF}\cr
+    Inner product\tab \code{A \%.\% B = cliffdotprod(A,B)}\tab
+    \eqn{\displaystyle A\cdot B=\sum_{r\neq 0\atop s\ne 0}\left\langle\left\langle A\right\rangle_r\left\langle
+      B\right\rangle_s\right\rangle_{\left|s-r\right|}}{see PDF}\cr
+    Outer product\tab\code{A \%^\% B = wedge(A,B)}\tab
+    \eqn{\displaystyle A\wedge B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
+      B\right\rangle_s\right\rangle_{s+r}}{see PDF}\cr
+    Fat dot product\tab\code{A \%o\% B = fatdot(A,B)}\tab
+    \eqn{\displaystyle A\bullet B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
+      B\right\rangle_s\right\rangle_{\left|s-r\right|}}{see PDF}\cr
+    Left contraction\tab\code{A \%_|\% B = lefttick(A,B)}\tab
+    \eqn{\displaystyle A\rfloor B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
+      B\right\rangle_s\right\rangle_{s-r}}{see PDF}\cr
+    Right contraction\tab\code{A \%|_\% B = righttick(A,B)}\tab
+    \eqn{\displaystyle A\lfloor B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
+      B\right\rangle_s\right\rangle_{r-s}}{see PDF}\cr
+    Cross product\tab\code{A \%X\% B = cross(A,B)}\tab
+    \eqn{\displaystyle A\times
+    B=\frac{1}{2_{\vphantom{j}}}\left(AB-BA\right)}{see PDF}\cr
+    Scalar product\tab\code{A \%star\% B = star(A,B)}\tab
+    \eqn{\displaystyle A\ast B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
+      B\right\rangle_s\right\rangle_0}{see PDF}\cr
+    Euclidean product\tab\code{A \%euc\% B = eucprod(A,B)}\tab
+    \eqn{\displaystyle A\star B= A\ast B^\dag}{see PDF}\cr
   }
 
-  The geometric product has to be indicated with a \dQuote{\code{*}}; so
-  we need a different idiom for scalar product.  Because geometric
-  product is often denoted by juxtaposition, package idiom includes
-  \code{ a \% \% b} for geometric product.
+  In R idiom, the geometric product \code{geoprod(.,.)} has to be
+  indicated with a \dQuote{\code{*}} (as in \code{A*B}) and so the
+  binary operator must be \code{\%*\%}: we need a different idiom for
+  scalar product, which is why \code{\%star\%} is used.
+
+  Because geometric product is often denoted by juxtaposition, package
+  idiom includes \code{a \% \% b} for geometric product.
 
   Function \code{clifford_inverse()} is problematic as nonnull blades
   always have an inverse; but function \code{is.blade()} is not yet
   implemented.  Blades (including null blades) have a pseudoinverse, but
   this is not implemented yet either.
   
-The \dfn{scalar product} of two clifford objects is defined as the
+  The \dfn{scalar product} of two clifford objects is defined as the
   zero-grade component of their geometric product:
   
   \deqn{
@@ -141,7 +182,10 @@ The \dfn{scalar product} of two clifford objects is defined as the
   [that is, \code{A \%star\% A} may be any sign], but the Euclidean
   product is guaranteed to be non-negative [that is, \code{A \%euc\% A}
   is always positive or zero].
-  
+
+  Dorst defines the left and right contraction (Chisholm calls these the
+  left and right inner product) as \eqn{A\rfloor B}{see PDF} and
+  \eqn{A\lfloor B}.  See the vignette for more details.
 
 }
 \value{
