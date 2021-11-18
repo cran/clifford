@@ -12,6 +12,8 @@
 \alias{c_lefttickprod}
 \alias{c_righttickprod}
 \alias{c_overwrite}
+\alias{c_cartan}
+\alias{c_cartan_inverse}
 \title{Low-level helper functions for \code{clifford} objects}
 \description{
   Helper functions for \code{clifford} objects, written in \code{C} using the
@@ -25,6 +27,8 @@ c_multiply(L1, c1, L2, c2, m, sig)
 c_power(L, c, m, p, sig)
 c_equal(L1, c1, L2, c2, m)
 c_overwrite(L1, c1, L2, c2, m)
+c_cartan(L, c, m, n)
+c_cartan_inverse(L, c, m, n)
 }
 \arguments{
   \item{L,L1,L2}{Lists of terms}
@@ -32,8 +36,9 @@ c_overwrite(L1, c1, L2, c2, m)
   \item{m}{Maximum entry of terms}
   \item{n}{Grade to extract}
   \item{p}{Integer power}
-  \item{sig}{Positive integer representing number of \eqn{+1} on main
-    diagonal of quadratic form}
+  \item{sig}{Two positive integers, \mjseqn{p} and \mjseqn{q},
+    representing the number of \mjseqn{+1} and \mjseqn{-1} terms
+    on the main diagonal of quadratic form}
 }
 \details{
 

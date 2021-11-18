@@ -48,8 +48,8 @@ grades(x)
 ###################################################
 ### code chunk number 8: e1e2cliff
 ###################################################
-e1 <- basis(1)
-e2 <- basis(2)
+e1 <- e(1)
+e2 <- e(2)
 e1*e1
 e2*e2
 
@@ -57,9 +57,9 @@ e2*e2
 ###################################################
 ### code chunk number 9: trysig
 ###################################################
-signature(1)  # signature +-
-e1*e1 # as before
-e2*e2 # sign changes
+signature(1,1)  # signature +-
+e1*e1 # as before, returns +1
+e2*e2 # should return -1
 
 
 ###################################################
@@ -73,20 +73,20 @@ y <- rcliff(d=4,g=3,include.fewer=TRUE)
 ### code chunk number 11: sigthree2
 ###################################################
 x*y
-signature(3)  # switch to signature +++-
+signature(3,1)  # switch to signature +++-
 x*y
 
 
 ###################################################
 ### code chunk number 12: grassmanalgebra
 ###################################################
-signature(-1)  # specify null inner product
+signature(0,0)  # specify null inner product
 
 
 ###################################################
-### code chunk number 13: clifford.Rnw:324-325
+### code chunk number 13: clifford.Rnw:332-333
 ###################################################
-is.zero(basis(5)^2)     # should be TRUE
+is.zero(e(5)^2)     # should be TRUE
 
 
 ###################################################
@@ -100,17 +100,17 @@ x %^% y
 ###################################################
 ### code chunk number 15: sigzero
 ###################################################
-signature(0)
+signature(Inf)
 
 
 ###################################################
-### code chunk number 16: clifford.Rnw:379-380
+### code chunk number 16: clifford.Rnw:390-391
 ###################################################
-basis(53)^2
+e(53)^2
 
 
 ###################################################
-### code chunk number 17: clifford.Rnw:402-406
+### code chunk number 17: clifford.Rnw:413-417
 ###################################################
 (A <- rcliff())
 (B <- rcliff())
@@ -119,25 +119,25 @@ A %|_% B
 
 
 ###################################################
-### code chunk number 18: clifford.Rnw:412-413
+### code chunk number 18: clifford.Rnw:423-424
 ###################################################
 e(2) %_|% e(1)*e(2)
 
 
 ###################################################
-### code chunk number 19: clifford.Rnw:419-420
+### code chunk number 19: clifford.Rnw:430-431
 ###################################################
 e(2) %_|% (e(1)*e(2))
 
 
 ###################################################
-### code chunk number 20: clifford.Rnw:425-426
+### code chunk number 20: clifford.Rnw:436-437
 ###################################################
 e(2) %_|% e(1:2)
 
 
 ###################################################
-### code chunk number 21: clifford.Rnw:442-446
+### code chunk number 21: clifford.Rnw:453-457
 ###################################################
 A <- rcliff();  B <- rcliff();  C <- rcliff()
 A %_|% (B %|_% C) == (A %_|% B) %|_% C

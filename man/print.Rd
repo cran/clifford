@@ -3,6 +3,7 @@
 \alias{as.character}
 \alias{as.character.clifford}
 \alias{catterm}
+\alias{basissep}
 \title{Print clifford objects}
 \description{Print methods for Clifford algebra}
 \usage{
@@ -41,15 +42,19 @@ Function \code{catterm()} is a low-level helper function.
 \seealso{\code{\link{clifford}}}  
 \examples{
 
-rcliff()   # fine
-rcliff(d=15) # incomprehensible
-
+a <- rcliff(d=15,g=9)
+a   # incomprehensible
 
 options("separate" = TRUE)
-rcliff(d=15) # incomprehensible
+a    # marginally better
 
 
 options("separate" = FALSE)
+options(basissep=",")
+a    #  clearer; YMMV
+
+options(basissep = NULL)  # restore defau
+
 
 
 }

@@ -5,6 +5,8 @@
 ## a test is failed.  Function checker1() has one argument, checker2()
 ## two, and checker3() has three.  Equation numbers are from Hestenes.
 
+big_test <- FALSE # set to TRUE for a more in-depth workout
+
 test_that("Test suite aab.R",{
 
 checker1 <- function(A){
@@ -61,7 +63,7 @@ checker1 <- function(A){
     total <- total + grade(A,r)
   }
   expect_true(A == total)  # 1.9
-  if(signature()==0){
+  if(signature() >= .Machine$integer.max){  # positive-definite
       expect_true(grade(grade(A,1,drop=FALSE)*grade(A,1,drop=FALSE),0)>=0) # 1.13
   }
   expect_true(grade(rev(A),0) == grade(A,0)) # 1.17c
@@ -86,12 +88,34 @@ checker1 <- function(A){
   expect_visible(summary(A))
   expect_visible(as.character(A))
   expect_visible(as.character(-A))
-  
+
+  for(n in 0:maxyterm(A)){
+      expect_true(dual(dual(dual(dual(A,n),n),n),n) == A)
+  }
+    
+
+    expect_true(is.zero(righttick(A,0)))
+    expect_true(is.zero(righttick(0,A)))
+
+
+    expect_true(A == neg(neg(A,1  ),1  ))
+    expect_true(A == neg(neg(A,2  ),2  ))
+    expect_true(A == neg(neg(A,3  ),3  ))
+    expect_true(A == neg(neg(A,1:2),1:2))
+
+    expect_true(neg(A,1  ) == A - 2*grade(A,1  ))
+    expect_true(neg(A,2  ) == A - 2*grade(A,2  ))
+    expect_true(neg(A,1:2) == A - 2*grade(A,1:2))
+
 }   # checker1() closes
   
 checker2 <- function(A,B){
   expect_true(A+B == B+A) # 1.1
   expect_true(A+2*B == B+B+A)
+
+  expect_true(A*B == A % % B)
+  expect_true(A %euc% B == const(A * Conj(B)))
+
   for(r in rstloop){
     Ar <- grade(A,r,drop=FALSE)
     Br <- grade(B,r,drop=FALSE)
@@ -205,18 +229,30 @@ checker3 <- function(A,B,C){
 
 }  # checker3() closes
   
-for(i in 1:10){
-    for(sigs in 0:2){
+
+if(big_test){
+  iloop <- seq_len(10)
+  sigloop <- c(0:4,Inf)
+  rstloop <- 0:4
+  lamloop <- 0:4
+} else {  # shorter, for CRAN
+  iloop <- seq_len(1)
+  sigloop <- c(1,Inf)
+  rstloop <- 1
+  lamloop <- 1
+}
+  
+
+for(i in seq_len(1)){
+    for(sigs in sigloop){
         signature(sigs)
-        rstloop <- 0:4
-        lamloop <- 0:2
         A <- rcliff(include.fewer=TRUE)
         B <- rcliff(5)
         C <- rcliff(5)
         
-        checker1(A)
-        checker2(A,B)
-        checker3(A,B,C)
+        if(big_test){checker1(A)}
+        if(big_test){checker2(A,B)}
+        print(system.time(checker3(A,B,C)))
     }
 }
 

@@ -6,8 +6,10 @@
 \alias{replace}
 \alias{[<-.clifford}
 \alias{coeffs}
+\alias{list_modifier}
 \alias{coeffs<-}
 \alias{coeffs<-.clifford}
+\alias{getcoeffs}
 \title{Extract or Replace Parts of a clifford}
 \description{
   Extract or replace subsets of cliffords.
@@ -17,11 +19,14 @@
 \method{[}{clifford}(C, index, \dots) <- value
 coeffs(x)
 coeffs(x) <- value
+list_modifier(B)
+getcoeffs(C, B)
 }
 \arguments{
   \item{C,x}{A clifford object}
   \item{index}{elements to extract or replace}
   \item{value}{replacement value}
+  \item{B}{A list of integer vectors, terms}
   \item{...}{Further arguments}
 }
 \details{
@@ -31,24 +36,51 @@ Extraction and replacement methods.  The extraction method uses
 function \code{c_overwrite()}.
 
 In the extraction function \code{a[index]}, if \code{index} is a list,
-further arguments are ignored.  If not, the dots are used.
+further arguments are ignored; if not, the dots are used.  If
+\code{index} is a list, its elements are interpreted as integer vectors
+indicating which terms to be extracted (even if it is a \code{disord}
+object).  If \code{index} is a \code{disord} object, standard
+consistency rules are applied.  The extraction methods are designed so
+that idiom such as \code{a[coeffs(a)>3]} works.
 
-Replacement methods using list-valued \code{index}, as in \code{A[i] <-
-value} uses an ugly hack if \code{value} is zero.
+For replacement methods, the standard use-case is \code{a[i] <- b} in
+which argument \code{i} is a list of integer vectors and \code{b} a
+length-one numeric vector.  Otherwise, to manipulate parts of a clifford
+object, use \code{coeffs(a) <- value}; this effectively leverages
+\code{disord} formalism.  Idiom such as \code{a[coeffs(a)<2] <- 0} is
+not currently implemented (to do this, use \code{coeffs(a)[coeffs(a)<2]
+<- 0}).  Replacement using a list-valued index, as in \code{A[i] <-
+value} uses an ugly hack if \code{value} is zero.  Replacement methods
+are not yet finalised and not yet fully integrated with the
+\code{disordR} package.
 
 Idiom such as \code{a[] <- b} follows the \code{spray} package.  If
 \code{b} is a length-one scalar, then \code{coeffs(a) <- b} has the same
 effect as \code{a[] <- b}.
 
-Functions \code{terms()} [see \code{term.Rd}]and \code{coeffs()} are the
-extraction methods.  These are unordered vectors but the ordering is
-consistent between them (an extended discussion of this phenomenon is
-presented in the \code{mvp} package).
+Functions \code{terms()} [see \code{term.Rd}] and \code{coeffs()}
+extract the terms and coefficients from a clifford object.  These
+functions return \code{disord} objects but the ordering is consistent
+between them (an extended discussion of this phenomenon is presented in
+the \code{mvp} package).
 
 Function \code{coeffs<-()} (idiom \code{coeffs(a) <- b}) sets all
 coefficients of \code{a} to \code{b}.  This has the same effect as
 \code{a[] <- b}.
- 
+
+Extraction and replacement methods treat \code{0} specially, translating
+it (via \code{list_modifier()}) to \code{numeric(0)}.
+
+Extracting or replacing a list with a repeated elements is usually a Bad
+Idea (tm).  However, if option \code{warn_on_repeats} is set to
+\code{FALSE}, no warning will be given (and the coefficient will be the
+sum of the coefficients of the term; see the examples).
+
+Function \code{getcoeffs()} is a lower-level helper function that lacks
+the succour offered by \code{[.clifford()}.  It returns a numeric vector
+[not a \code{disord} object: the order of the elements is determined by
+the order of argument \code{B}].
+
 }
 \seealso{\code{\link{Ops.clifford}},\code{\link{clifford}},\code{\link{term}}}
 \examples{
@@ -59,6 +91,14 @@ A[1,c(1,3,4)]
 
 A[2:3, 4] <- 99
 A[] <- B
+
+# clifford(list(1,1:2,1:2),1:3)  # would give a warning
+
+options("warn_on_repeats" = FALSE)
+clifford(list(1,1:2,1:2),1:3)  # works; 1e1 + 5e_12
+
+options("warn_on_repeats" = TRUE) # return to default behaviour.
+
 
 }
 

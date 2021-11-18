@@ -39,13 +39,24 @@ test_that("Test suite aaa.R",{
     expect_true(is.zero(as.clifford(0) %.% as.clifford(1)))
     expect_true(is.zero(as.clifford(0) %.% as.clifford(0)))
 
+    expect_true (is.zero(as.clifford(0) %o% as.clifford(0)))
+    expect_true (is.zero(as.clifford(1) %o% as.clifford(0)))
+    expect_true (is.zero(as.clifford(0) %o% as.clifford(1)))
+    expect_false(is.zero(as.clifford(1) %o% as.clifford(1)))
+
+    expect_true (is.zero(as.clifford(0) % % as.clifford(0)))
+    expect_true (is.zero(as.clifford(1) % % as.clifford(0)))
+    expect_true (is.zero(as.clifford(0) % % as.clifford(1)))
+    expect_false(is.zero(as.clifford(1) % % as.clifford(1)))
+
+
     expect_true(as.clifford(0) == +as.clifford(0))
     expect_true(as.clifford(0) == -as.clifford(0))
 
-    expect_error(as.clifford(0) == 0)
-    expect_error(as.clifford(0) != 0)
-    expect_error(0 == as.clifford(0))
-    expect_error(0 != as.clifford(0))
+    expect_true(as.clifford(0) == 0)
+    expect_false(as.clifford(0) != 0)
+    expect_true(0 == as.clifford(0))
+    expect_false(0 != as.clifford(0))
 
     expect_true(as.clifford(0) * as.clifford(0) == as.clifford(0))
     expect_true(0 * as.clifford(0) == as.clifford(0))
@@ -99,8 +110,8 @@ test_that("Test suite aaa.R",{
     
     jj <- clifford(list(1,1:2,1:3,1:4),1:4)
     expect_true(getcoeffs(jj,list(1:2))==2)
-    expect_error(jj == 0)
-    expect_error(jj == 1)
+    expect_false(jj == 0)
+    expect_false(jj == 1)
     expect_true(all(getcoeffs(jj,list(1,1:2)) %in% 1:2))
     expect_true(as.clifford(NULL) == as.clifford(0))
     expect_false(as.clifford(NULL) == as.clifford(1))
@@ -115,7 +126,7 @@ test_that("Test suite aaa.R",{
 
     const(jj) <- 3
     expect_true(const(jj) == 3)
-    expect_error(const(jj,drop=FALSE) == 3)
+    expect_true(const(jj,drop=FALSE) == 3)
     expect_true(const(jj,drop=FALSE) == as.clifford(3))
     expect_true(is.clifford(jj))
 
@@ -144,6 +155,8 @@ test_that("Test suite aaa.R",{
     expect_output(print(-rcliff()))
     expect_output(print(+rcliff()))
 
+    expect_output(print(summary(rcliff())))
+
     expect_true(
         clifford(sapply(1:5,seq_len),1)[sapply(1:2,seq_len)] ==
         basis(1) + basis(1:2)
@@ -154,15 +167,20 @@ test_that("Test suite aaa.R",{
     expect_true(zap(basis(1)) == basis(1))
     expect_false(zap(pi*basis(1)) == pi*basis(1))
 
-    expect_error(signature(1:2))
-    expect_error(signature(0.5))
-
     expect_error(is.blade(as.clifford(4)))
 
     expect_error(antivector(1:5,3))
     expect_true(is.antivector(antivector(1:5,5)))
     expect_true(is.clifford(rblade()))
 
+    expect_false(is.antivector(allcliff(2)))
+    expect_false(is.antivector(allcliff(3)))
+
+    expect_false(is.antivector(pseudoscalar(3),include.pseudoscalar=FALSE))
+    expect_true (is.antivector(pseudoscalar(3),include.pseudoscalar=TRUE ))
+
     expect_visible(as.character(as.clifford(0)))
-    
+    expect_true(as.character(as.clifford(0)) == "0")
+    expect_true(as.character(as.clifford(4)) == "4")
+     
 })

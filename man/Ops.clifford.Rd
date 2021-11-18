@@ -1,5 +1,6 @@
 \name{Ops.clifford}
 \alias{\%.\%}
+\alias{\%dot\%}
 \alias{\%^\%}
 \alias{\%X\%}
 \alias{\%star\%}
@@ -36,8 +37,10 @@
 \alias{fatdot}
 \alias{clifford_lefttick_clifford}
 \alias{lefttick}
+\alias{left_contraction}
 \alias{clifford_righttick_clifford}
 \alias{righttick}
+\alias{right contraction}
 \alias{clifford_power_scalar}
 \alias{clifford_eq_clifford}
 \alias{clifford_inverse}
@@ -54,7 +57,7 @@
 \alias{euclid\_product}
 \alias{euclidean\_product}
 \title{Arithmetic Ops Group Methods for \code{clifford} objects}
-\description{
+\description{\loadmathjax
   Allows arithmetic operators to be used for
   multivariate polynomials  such as addition, multiplication,
   integer powers, etc.
@@ -76,6 +79,7 @@ scalprod(C1,C2=rev(C1),drop=TRUE)
 eucprod(C1,C2=C1,drop=TRUE)
 maxyterm(C1,C2=as.clifford(0))
 C1 \%.\% C2
+C1 \%dot\% C2
 C1 \%^\% C2
 C1 \%X\% C2
 C1 \%star\% C2
@@ -86,7 +90,8 @@ C1 \%_|\% C2
 C1 \%|_\% C2
 }
 \arguments{
-  \item{e1,e2,C,C1,C2}{Objects of class \code{clifford}}
+  \item{e1,e2,C,C1,C2}{Objects of class \code{clifford} or coerced if
+    needed}
   \item{x}{Scalar, length one numeric vector}
   \item{drop}{Boolean, with default \code{TRUE} meaning to return the
     constant coerced to numeric, and \code{FALSE} meaning to return a
@@ -107,31 +112,32 @@ C1 \%|_\% C2
 
   \tabular{lll}{\cr
     Geometric product \tab \code{A*B = geoprod(A,B)} \tab
-    \eqn{\displaystyle AB=\sum_{r,s}\left\langle A\right\rangle_r\left\langle
+    \mjeqn{\displaystyle AB=\sum_{r,s}\left\langle A\right\rangle_r\left\langle
       B\right\rangle_s}{see PDF}\cr
     Inner product\tab \code{A \%.\% B = cliffdotprod(A,B)}\tab
-    \eqn{\displaystyle A\cdot B=\sum_{r\neq 0\atop s\ne 0}\left\langle\left\langle A\right\rangle_r\left\langle
+    \mjeqn{\displaystyle A\cdot B=\sum_{r\neq 0\atop s\ne
+    0}^{\vphantom{s\neq 0}}\left\langle\left\langle A\right\rangle_r\left\langle
       B\right\rangle_s\right\rangle_{\left|s-r\right|}}{see PDF}\cr
     Outer product\tab\code{A \%^\% B = wedge(A,B)}\tab
-    \eqn{\displaystyle A\wedge B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
+    \mjeqn{\displaystyle A\wedge B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
       B\right\rangle_s\right\rangle_{s+r}}{see PDF}\cr
     Fat dot product\tab\code{A \%o\% B = fatdot(A,B)}\tab
-    \eqn{\displaystyle A\bullet B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
+    \mjeqn{\displaystyle A\bullet B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
       B\right\rangle_s\right\rangle_{\left|s-r\right|}}{see PDF}\cr
     Left contraction\tab\code{A \%_|\% B = lefttick(A,B)}\tab
-    \eqn{\displaystyle A\rfloor B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
+    \mjeqn{\displaystyle A\rfloor B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
       B\right\rangle_s\right\rangle_{s-r}}{see PDF}\cr
     Right contraction\tab\code{A \%|_\% B = righttick(A,B)}\tab
-    \eqn{\displaystyle A\lfloor B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
+    \mjeqn{\displaystyle A\lfloor B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
       B\right\rangle_s\right\rangle_{r-s}}{see PDF}\cr
     Cross product\tab\code{A \%X\% B = cross(A,B)}\tab
-    \eqn{\displaystyle A\times
+    \mjeqn{\displaystyle A\times
     B=\frac{1}{2_{\vphantom{j}}}\left(AB-BA\right)}{see PDF}\cr
     Scalar product\tab\code{A \%star\% B = star(A,B)}\tab
-    \eqn{\displaystyle A\ast B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
+    \mjeqn{\displaystyle A\ast B=\sum_{r,s}\left\langle\left\langle A\right\rangle_r\left\langle
       B\right\rangle_s\right\rangle_0}{see PDF}\cr
     Euclidean product\tab\code{A \%euc\% B = eucprod(A,B)}\tab
-    \eqn{\displaystyle A\star B= A\ast B^\dag}{see PDF}\cr
+    \mjeqn{\displaystyle A\star B= A\ast B^\dagger}{see PDF}\cr
   }
 
   In R idiom, the geometric product \code{geoprod(.,.)} has to be
@@ -142,24 +148,28 @@ C1 \%|_\% C2
   Because geometric product is often denoted by juxtaposition, package
   idiom includes \code{a \% \% b} for geometric product.
 
-  Function \code{clifford_inverse()} is problematic as nonnull blades
-  always have an inverse; but function \code{is.blade()} is not yet
-  implemented.  Blades (including null blades) have a pseudoinverse, but
-  this is not implemented yet either.
+  Binary operator \code{\%dot\%} is a synonym for \code{\%.\%}, which
+  causes problems for rmarkdown.
+
+  Function \code{clifford_inverse()} returns an inverse for nonnull
+  Clifford objects \mjseqn{Cl(p,q)} for \mjeqn{p+q\leq 5}{p+5 <= 5}, and
+  a few other special cases.  The functionality is problematic as
+  nonnull blades always have an inverse; but function \code{is.blade()}
+  is not yet implemented.  Blades (including null blades) have a
+  pseudoinverse, but this is not implemented yet either.
   
   The \dfn{scalar product} of two clifford objects is defined as the
   zero-grade component of their geometric product:
   
-  \deqn{
-    A\ast B=\left<AB\right>_0\qquad{\mbox{NB: notation used by both Perwass
-    and Hestenes}}
+  \mjdeqn{
+    A\ast B=\left\langle AB\right\rangle_0\qquad{\mbox{NB: notation used by both Perwass and Hestenes}}
   }{
     omitted; see PDF
   }
 
   In package idiom the scalar product is given by \code{A \%star\% B} or
   \code{scalprod(A,B)}.  Hestenes and Perwass both use an asterisk for
-  scalar product as in \dQuote{\eqn{A*B}}, but in package idiom, the
+  scalar product as in \dQuote{\mjeqn{A*B}{A*B}}, but in package idiom, the
   asterisk is reserved for geometric product.
 
   \strong{Note: in the package, \code{A*B} is the geometric product}.
@@ -167,35 +177,46 @@ C1 \%|_\% C2
   The \dfn{Euclidean product} (or \dfn{Euclidean scalar product}) of two
   clifford objects is defined as 
 
-  \deqn{
-    A\star B=A\ast B^\dag=\left<AB^\dag\right>_0\qquad{\mbox{Perwass}}
+  \mjdeqn{
+    A\star B=
+    A\ast B^\dagger=
+    \left\langle AB^\dagger\right\rangle_0\qquad{\mbox{Perwass}}
   }{
     omitted: see PDF
   }
 
-  where \eqn{B^\dag}{?} denotes Conjugate [as in \code{Conj(a)}].  In
+  where \mjeqn{B^\dagger}{?} denotes Conjugate [as in \code{Conj(a)}].  In
   package idiom the Euclidean scalar product is given by
   \code{eucprod(A,B)} or \code{A \%euc\% B}, both of which return
   \code{A * Conj(B)}.
 
-  Note that the scalar product \eqn{A\ast A} can be positive or negative
-  [that is, \code{A \%star\% A} may be any sign], but the Euclidean
-  product is guaranteed to be non-negative [that is, \code{A \%euc\% A}
-  is always positive or zero].
+  Note that the scalar product \mjeqn{A\ast A}{?} can be positive or
+  negative [that is, \code{A \%star\% A} may be any sign], but the
+  Euclidean product is guaranteed to be non-negative [that is, \code{A
+  \%euc\% A} is always positive or zero].
 
   Dorst defines the left and right contraction (Chisholm calls these the
-  left and right inner product) as \eqn{A\rfloor B}{see PDF} and
-  \eqn{A\lfloor B}.  See the vignette for more details.
+  left and right inner product) as \mjeqn{A\rfloor B}{see PDF} and
+  \mjeqn{A\lfloor B}{see PDF}.  See the vignette for more details.
 
+  Division, as in idiom \code{x/y}, is defined as
+  \code{x*clifford_inverse(y)}.  Function \code{clifford_inverse()} uses
+  the method set out by Hitzer and Sangwine but is limited to
+  \mjeqn{p+q\leq 5}{p+q <= 5}.
+
+  
 }
 \value{
-
-  The high-level functions documented here return an object of
-  \code{clifford}.  But don't use the low-level functions.
-
+  The high-level functions documented here return a \code{clifford}
+  object.  The low-level functions are not really intended for the
+  end-user.
 }
 \author{Robin K. S. Hankin}
-\seealso{\code{\link{scalprod}}}
+\references{
+E. Hitzer and S. Sangwine 2017.  \dQuote{Multivector and multivector
+  matrix inverses in real Clifford algebras}.  \emph{Applied Mathematics
+  and Computation} 311:375-389
+  }
 \examples{
 
 u <- rcliff(5)
@@ -207,18 +228,20 @@ u*v
 u^3
 
 
-u+(v+w) == (u+v)+w              # should be TRUE 
-u*(v*w) == (u*v)*w              # should be TRUE 
+u+(v+w) == (u+v)+w            # should be TRUE 
+u*(v*w) == (u*v)*w            # should be TRUE 
 u \%^\% v == (u*v-v*u)/2        # should be TRUE 
 
-# Now if x,y,z are _vectors_ we would have:
+# Now if x,y,z are _vectors_ we have:
 
 x <- as.1vector(5)
 y <- as.1vector(5)
-x*y == x\%.\%y + x\%^\%y        # should be TRUE
-x \%^\% y == x \%^\% (y + 3*x)  # should be TRUE 
+x*y == x\%.\%y + x\%^\%y
+x \%^\% y == x \%^\% (y + 3*x)  
+#  above are TRUE for x,y vectors (but not in general)
 
-## Inner product is "%.%" is not associative:
+
+## Inner product "%.%" is not associative:
  rcliff(5,g=2) -> x
  rcliff(5,g=2) -> y
  rcliff(5,g=2) -> z
