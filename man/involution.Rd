@@ -112,8 +112,6 @@
     \emph{and} the dimension of the underlying vector space.
   }
 }
- 
-  
 
 \usage{
 \method{rev}{clifford}(x)
@@ -133,13 +131,14 @@ gradeinv(C)
 \examples{
 
 x <- rcliff()
+x
 rev(x)
 
 
 A <- rblade(g=3)
 B <- rblade(g=4)
-rev(A \%^\% B) == rev(B) \%^\% rev(A)  # should be small
-rev(A * B) == rev(B) * rev(A)            # should be small
+rev(A \%^\% B) == rev(B) \%^\% rev(A)  # should be TRUE
+rev(A * B) == rev(B) * rev(A)          # should be TRUE
 
 a <- rcliff()
 dual(dual(dual(dual(a,8),8),8),8) == a # should be TRUE

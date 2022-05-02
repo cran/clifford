@@ -65,19 +65,23 @@ and for a strictly negative-definite quadratic form we would need
 
 If we specify \mjeqn{e_ie_i=0}{omitted} for all \mjseqn{i}, then the
 operation reduces to the wedge product of a Grassman algebra.  Package
-idiom for this is to set \mjseqn{p=0,q=0}, but this is not recommended:
+idiom for this is to set \mjseqn{p=q=0}, but this is not recommended:
 use the \pkg{stokes} package for Grassman algebras, which is much more
 efficient and uses nicer idiom.
 
 Function \code{signature(p,q)} returns the signature silently; but
 setting option \code{show_signature} to \code{TRUE} makes
-\code{signature()} have the side-effect of calling \code{showsig()}.
-This changes the default prompt to display the signature, much like
+\code{signature()} have the side-effect of calling \code{showsig()},
+which changes the default prompt to display the signature, much like
 \code{showSOL} in the \code{lorentz} package.  There is special
-dispensation for \dQuote{infinite} \mjseqn{p} or \mjseqn{q}; the
-\code{sigobj} class ensures that a near-infinite integer such as
-\code{.Machine$integer.max} will be printed as \dQuote{\code{Inf}}
-rather than, for example, \dQuote{\code{2147483647}}.
+dispensation for \dQuote{infinite} \mjseqn{p} or \mjseqn{q}.
+
+Calling \code{signature()} [that is, with no arguments] returns an
+object of class \code{sigobj} with elements corresponding to \eqn{p} and
+\eqn{q}.  The \code{sigobj} class ensures that a near-infinite integer
+such as \code{.Machine$integer.max} will be printed as
+\dQuote{\code{Inf}} rather than, for example,
+\dQuote{\code{2147483647}}.
 
 Function \code{is_ok_sig()} is a helper function that checks for a
 proper signature.

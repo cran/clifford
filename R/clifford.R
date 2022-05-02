@@ -187,10 +187,7 @@ setGeneric("dim")
   } else {
     f <- function(...){g}
   }
-  op <- options() 
-  options(warn=0)
-  out <- clifford(replicate(n,sort(sample(d,f())),simplify=FALSE),sample(n)-round(n/2))
-  options(op)
+  out <- clifford(unique(replicate(n,sort(sample(d,f())),simplify=FALSE)),sample(n)-round(n/2))
   if(include.fewer){out <- out + round(1+mean(abs(coeffs(out))))}
   return(out)
 } 
@@ -199,26 +196,6 @@ setGeneric("dim")
     Reduce(`%^%`, sapply(seq_len(g), function(...) {
         as.1vector(sample(1:5,d,replace=TRUE))
     }, simplify = FALSE))
-}
-
-`rev.clifford` <- function(x){
-  swap <- (grades(x)%%4) %in% 2:3
-  coeffs(x)[swap] <- -coeffs(x)[swap]
-  return(x)
-}
-
-
-`minus` <- function(x){-x}
-
-`Conj.clifford` <- function(z){
-  z <- rev(z)
-  coeffs(z)[gradesminus(z)%%2 != 0] %<>% minus
-  return(z)
-}
-
-`cliffconj` <- function(z){
-    coeffs(z)[grades(z)%%4 %in% 1:2] %<>% minus
-    return(z)
 }
 
 `print.clifford` <- function(x,...){
@@ -247,9 +224,6 @@ setGeneric("dim")
   cat("\n")
   return(x)
 }
-
-
-
 
 setGeneric("drop")
 setMethod("drop","clifford", function(x){
@@ -394,20 +368,6 @@ setMethod("drop","clifford", function(x){
                                 )),hashcal(x)))
 }
 
-`dual` <- function(C,n){ C*clifford_inverse(pseudoscalar(n)) }
-
-#`neg_old` <- function(C,n){clifford(elements(terms(C)),elements(coeffs(C))*ifelse(elements(grades(C)) %in% n,-1,1))}
-`neg` <- function(C,n){
-    coeffs(C)[grades(C) %in% n] %<>% minus
-    return(C)
-}
-
-#`gradeinv_old` <- function(C){clifford(elements(terms(C)),elements(coeffs(C))*ifelse(elements(grades(C))%%2==1,-1,1))}
-`gradeinv` <- function(C){
-    coeffs(C)[grades(C)%%2==1] %<>% minus
-    return(C)
-}
-
 `first_n_last` <- function(x){
   n <- nterms(x)
   paste(
@@ -441,3 +401,6 @@ setMethod("drop","clifford", function(x){
     out[tx] <- coeffs(x)
     return(out)
 }
+
+`horner` <- function(P,v){Reduce(v, right=TRUE, f=function(a,b){b*P + a})}
+

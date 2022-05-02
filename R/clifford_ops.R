@@ -22,6 +22,8 @@
     if(isTRUE(getOption("show_signature"))){
         if(s[1] == .Machine$integer.max){
             options("prompt" = "Cl(Inf) > ")
+        } else if(s[2] == .Machine$integer.max){
+            options("prompt" = paste("Cl(",s[1],",Inf) > ",sep=""))
         } else if(all(s==0)){
             options("prompt" = "Grassman > ")
         } else {
@@ -169,7 +171,9 @@ maxyterm <- function(C1,C2=as.clifford(0)){
 }
 
 clifford_power_scalar <- function(C,n){
-  stopifnot(n==round(n))
+  stopifnot("exponent must be length 1"=length(n)==1)
+  stopifnot("exponent must be an integer"=n==round(n))
+  stopifnot("exponent must be nonnegative"=n>=0)
   if(n<0){
     stop("negative powers not implemented")
   } else if(n==0){

@@ -84,7 +84,7 @@ signature(0,0)  # specify null inner product
 
 
 ###################################################
-### code chunk number 13: clifford.Rnw:332-333
+### code chunk number 13: clifford.Rnw:334-335
 ###################################################
 is.zero(e(5)^2)     # should be TRUE
 
@@ -92,8 +92,8 @@ is.zero(e(5)^2)     # should be TRUE
 ###################################################
 ### code chunk number 14: reproducewedge
 ###################################################
-x <- clifford(list(1:3, c(2,3,7)), 3:4)
-y <- clifford(list(1:3, c(1,4,5), c(4,5,6)), 1:3)
+x <- clifford(list(1:3, c(2,3,7)), coeffs=3:4)
+y <- clifford(list(1:3, c(1,4,5), c(4,5,6)), coeffs=1:3)
 x %^% y
 
 
@@ -104,13 +104,13 @@ signature(Inf)
 
 
 ###################################################
-### code chunk number 16: clifford.Rnw:390-391
+### code chunk number 16: clifford.Rnw:392-393
 ###################################################
 e(53)^2
 
 
 ###################################################
-### code chunk number 17: clifford.Rnw:413-417
+### code chunk number 17: clifford.Rnw:415-419
 ###################################################
 (A <- rcliff())
 (B <- rcliff())
@@ -119,25 +119,25 @@ A %|_% B
 
 
 ###################################################
-### code chunk number 18: clifford.Rnw:423-424
+### code chunk number 18: clifford.Rnw:425-426
 ###################################################
 e(2) %_|% e(1)*e(2)
 
 
 ###################################################
-### code chunk number 19: clifford.Rnw:430-431
+### code chunk number 19: clifford.Rnw:432-433
 ###################################################
 e(2) %_|% (e(1)*e(2))
 
 
 ###################################################
-### code chunk number 20: clifford.Rnw:436-437
+### code chunk number 20: clifford.Rnw:438-439
 ###################################################
 e(2) %_|% e(1:2)
 
 
 ###################################################
-### code chunk number 21: clifford.Rnw:453-457
+### code chunk number 21: clifford.Rnw:455-459
 ###################################################
 A <- rcliff();  B <- rcliff();  C <- rcliff()
 A %_|% (B %|_% C) == (A %_|% B) %|_% C
