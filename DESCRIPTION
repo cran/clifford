@@ -1,7 +1,7 @@
 Package: clifford
 Type: Package
 Title: Arbitrary Dimensional Clifford Algebras
-Version: 1.0-7
+Version: 1.0-8
 Authors@R: person(given=c("Robin", "K. S."), family="Hankin", role = c("aut","cre"), email="hankin.robin@gmail.com", comment = c(ORCID = "0000-0001-5982-0415"))
 Maintainer: Robin K. S. Hankin <hankin.robin@gmail.com>
 Description: A suite of routines for Clifford algebras, using the
@@ -9,7 +9,8 @@ Description: A suite of routines for Clifford algebras, using the
    reference: Hestenes (1987, ISBN 90-277-1673-0, "Clifford algebra
    to geometric calculus").  Special cases including Lorentz transforms,
    quaternion multiplication, and Grassman algebra, are discussed.
-   Conformal geometric algebra theory is implemented.
+   Conformal geometric algebra theory is implemented.  Uses 'disordR'
+   discipline.
 License: GPL (>= 2)
 Suggests: knitr,rmarkdown,testthat,onion,lorentz
 VignetteBuilder: knitr
@@ -21,7 +22,7 @@ URL: https://github.com/RobinHankin/clifford
 BugReports: https://github.com/RobinHankin/clifford/issues
 RdMacros: mathjaxr
 NeedsCompilation: yes
-Packaged: 2022-05-01 08:27:32 UTC; rhankin
+Packaged: 2022-08-13 20:41:19 UTC; rhankin
 Author: Robin K. S. Hankin [aut, cre] (<https://orcid.org/0000-0001-5982-0415>)
 Repository: CRAN
-Date/Publication: 2022-05-02 08:40:08 UTC
+Date/Publication: 2022-08-13 22:00:03 UTC
