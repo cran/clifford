@@ -9,7 +9,7 @@ The clifford package: Clifford algebra in R
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/clifford)](https://cran.r-project.org/package=clifford)
 [![Codecov test
-coverage](https://codecov.io/gh/RobinHankin/clifford/branch/master/graph/badge.svg)](https://codecov.io/gh/RobinHankin/clifford/branch/master)
+coverage](https://codecov.io/gh/RobinHankin/clifford/graph/badge.svg)](https://app.codecov.io/gh/RobinHankin/clifford/branch/master)
 <!-- badges: end -->
 
 The `clifford` package provides R-centric functionality for working with
@@ -72,23 +72,19 @@ a %euc% b  # Euclidean product
 The package can deal with non positive-definite inner products. Suppose
 we wish to deal with an inner product of
 
-![
-\\begin{pmatrix}
-+1 & 0 & 0 & 0 & 0\\\\
- 0 &+1 & 0 & 0 & 0\\\\
- 0 & 0 &+1 & 0 & 0\\\\
- 0 & 0 & 0 &-1 & 0\\\\
- 0 & 0 & 0 & 0 &-1
-\\end{pmatrix}
-](https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Bpmatrix%7D%0A%2B1%20%26%200%20%26%200%20%26%200%20%26%200%5C%5C%0A%200%20%26%2B1%20%26%200%20%26%200%20%26%200%5C%5C%0A%200%20%26%200%20%26%2B1%20%26%200%20%26%200%5C%5C%0A%200%20%26%200%20%26%200%20%26-1%20%26%200%5C%5C%0A%200%20%26%200%20%26%200%20%26%200%20%26-1%0A%5Cend%7Bpmatrix%7D%0A "
-\begin{pmatrix}
+![\begin{pmatrix}
 +1 & 0 & 0 & 0 & 0\\
  0 &+1 & 0 & 0 & 0\\
  0 & 0 &+1 & 0 & 0\\
  0 & 0 & 0 &-1 & 0\\
  0 & 0 & 0 & 0 &-1
-\end{pmatrix}
-")
+\end{pmatrix}](https://latex.codecogs.com/png.latex?%5Cbegin%7Bpmatrix%7D%0A%2B1%20%26%200%20%26%200%20%26%200%20%26%200%5C%5C%0A%200%20%26%2B1%20%26%200%20%26%200%20%26%200%5C%5C%0A%200%20%26%200%20%26%2B1%20%26%200%20%26%200%5C%5C%0A%200%20%26%200%20%26%200%20%26-1%20%26%200%5C%5C%0A%200%20%26%200%20%26%200%20%26%200%20%26-1%0A%5Cend%7Bpmatrix%7D "\begin{pmatrix}
++1 & 0 & 0 & 0 & 0\\
+ 0 &+1 & 0 & 0 & 0\\
+ 0 & 0 &+1 & 0 & 0\\
+ 0 & 0 & 0 &-1 & 0\\
+ 0 & 0 & 0 & 0 &-1
+\end{pmatrix}")
 
 where the diagonal is a number of
 ![+1](https://latex.codecogs.com/png.latex?%2B1 "+1") terms followed by
@@ -100,7 +96,7 @@ signature(3)
 ```
 
 Function `signature()` is based on `lorentz::sol()` and its argument
-specifes the number of basis blades that square to
+specifies the number of basis blades that square to
 ![+1](https://latex.codecogs.com/png.latex?%2B1 "+1"), the others
 squaring to ![-1](https://latex.codecogs.com/png.latex?-1 "-1"). Thus
 ![e_1^2=e_2^2=e_3^2=1](https://latex.codecogs.com/png.latex?e_1%5E2%3De_2%5E2%3De_3%5E2%3D1 "e_1^2=e_2^2=e_3^2=1")
@@ -130,21 +126,22 @@ Thus:
 options("basissep" = ",")
 (x <- rcliff(d=20))
 #> Element of a Clifford algebra, equal to
-#> + 4 + 5e_2 + 1e_5 - 2e_4,7 + 2e_11 + 4e_14 - 1e_10,14 + 3e_5,9,15 - 3e_18,19
+#> + 5 - 1e_2 + 6e_5 + 2e_4,7 - 3e_10 - 5e_11 + 3e_14 + 1e_10,14 + 4e_5,9,15 +
+#> 9e_18,19
 summary(x^3)
 #> Element of a Clifford algebra 
-#> Typical terms:  364  ...  + 54e_5,9,10,14,15,18,19 
-#> Number of terms: 40 
-#> Magnitude: 265721
+#> Typical terms:  140  ...  + 216e_5,9,10,14,15,18,19 
+#> Number of terms: 44 
+#> Magnitude: 25376
 ```
 
 # References
 
--   D. Hestenes 1987. *Clifford algebra to geometric calculus*, Kluwer.
--   J. Snygg 2010. *A new approach to differential geometry using
-    Clifford’s geometric algebra*. Berghauser.
--   C. Perwass 2009. *Geometric algebra with applications in
-    engineering*. Springer.
+- D. Hestenes 1987. *Clifford algebra to geometric calculus*, Kluwer.
+- J. Snygg 2010. *A new approach to differential geometry using
+  Clifford’s geometric algebra*. Berghauser.
+- C. Perwass 2009. *Geometric algebra with applications in engineering*.
+  Springer.
 
 # Further information
 

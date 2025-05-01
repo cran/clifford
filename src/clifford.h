@@ -10,15 +10,14 @@
 #include <Rcpp.h>
 #include <boost/dynamic_bitset.hpp>
 
-using namespace std;
 using namespace Rcpp;
 
 typedef boost::dynamic_bitset<> blade;
-typedef map<blade, long double> clifford;
+typedef std::map<blade, long double> clifford;
 typedef std::tuple<blade, int> blade_and_sign;
 
 clifford remove_zeros(clifford &C){
-   for(auto it=C.begin() ; it != C.end() ;){
+    for(auto it=C.cbegin() ; it != C.end() ;){
         if(it->second == 0){
             it = C.erase(it); //increments pointer
         } else {
@@ -31,6 +30,9 @@ clifford remove_zeros(clifford &C){
 clifford prepare(const List &L, const NumericVector &d, const NumericVector &m){
     clifford out;
     const size_t n=L.size();
+    if(!((unsigned int) n == d.length())){
+        throw std::range_error("in prepare(L,d,m) [file inst/clifford.h], L must be the same length as d");
+    }
     for(size_t i=0 ; i<n ; i++){
         if(d[i] != 0){
             Rcpp::IntegerVector iv = as<Rcpp::IntegerVector> (L[i]);
@@ -55,20 +57,20 @@ Rcpp::IntegerVector which(const blade b){ // takes a blade, returns which(blade)
     return out;
 }
 
-List Rblades(const clifford C){  // takes a clifford object, returns a list of which(blades); used in retval()
+List Rblades(const clifford &C){  // takes a clifford object, returns a list of which(blades); used in retval()
     List out;
 
-    for(auto ic=C.begin(); ic != C.end(); ++ic){
+    for(auto ic=C.cbegin(); ic != C.end(); ++ic){
         out.push_back(which(ic->first));
     }
     return out;
 }
 
-NumericVector coeffs(const clifford C){  // takes a clifford object, returns the coefficients
+NumericVector coeffs(const clifford &C){  // takes a clifford object, returns the coefficients
     NumericVector out(C.size());
     unsigned int i=0;
 
-    for(auto ic=C.begin(); ic != C.end(); ++ic){
+    for(auto ic=C.cbegin(); ic != C.end(); ++ic){
         out[i] = ic->second;
         i++;
     }
@@ -83,15 +85,13 @@ List retval(const clifford &C){  // used to return a list to R
 
 clifford c_add(clifford cliff1, clifford cliff2){
     if(cliff1.size() > cliff2.size()){ // #1 is bigger, so iterate through #2
-        for (auto ic=cliff2.begin(); ic != cliff2.end(); ++ic){
-            const blade b = ic->first;
-            cliff1[b] += cliff2[b];
+        for(const auto& [blade2, value2] : cliff2 ){
+            cliff1[blade2] += value2;
         }
         return remove_zeros(cliff1);
     } else {  // L2 is bigger
-        for (auto ic=cliff1.begin(); ic != cliff1.end(); ++ic){
-            const blade b = ic->first;
-            cliff2[b] += cliff1[b];
+        for(const auto& [blade1, value1] : cliff1 ){
+            cliff2[blade1] += value1;
         }
         return remove_zeros(cliff2);
     }
@@ -100,7 +100,7 @@ clifford c_add(clifford cliff1, clifford cliff2){
 blade_and_sign juxtapose(blade b1, blade b2, const NumericVector signature){//juxtaposes two blades, returns reduction and sign
     signed int sign = 1;
     blade bout;
-    const size_t m = max(b1.size(),b2.size());
+    const size_t m = std::max(b1.size(),b2.size());
 
     assert(signature[0] >= 0);  /* technically redundant: is_ok_sig() also ensures this */
     assert(signature[1] >= 0);
@@ -137,18 +137,16 @@ blade_and_sign juxtapose(blade b1, blade b2, const NumericVector signature){//ju
     return std::make_tuple(bout,sign);
 }
 
-clifford c_general_prod(const clifford C1, const clifford C2, const NumericVector signature, bool (*chooser)(const blade, const blade)){
+clifford c_general_prod(const clifford &C1, const clifford &C2, const NumericVector signature, bool (*chooser)(const blade, const blade)){
 
     clifford out;
     blade b;
     int sign;
-    for(auto ic1=C1.begin(); ic1 != C1.end(); ++ic1){
-        const blade b1 = ic1->first;
-        for(auto ic2=C2.begin(); ic2 != C2.end(); ++ic2){
-            const blade b2 = ic2->first;
+    for(const auto &[b1, value1] : C1 ){
+        for(const auto &[b2, value2] : C2 ){
             if(chooser(b1,b2)){
-                tie(b, sign) = juxtapose(b1, b2, signature);
-                out[b] += sign*(ic1->second)*(ic2->second); // the meat
+                std::tie(b, sign) = juxtapose(b1, b2, signature);
+                out[b] += sign * value1 * value2; // the meat
             }
         }
     }
@@ -161,9 +159,8 @@ bool c_equal(clifford C1, clifford C2){
         return false;
     }
 
-    for (auto ic=C1.begin(); ic != C1.end(); ++ic){
-        const blade b = ic->first;
-        if(C1[b] != C2[b]){
+    for(const auto &[b1, value1] : C1 ){
+        if(C2[b1] != value1){
             return false;
         }
     }
@@ -171,17 +168,38 @@ bool c_equal(clifford C1, clifford C2){
     return true;
 }
 
-clifford c_grade(const clifford C, const NumericVector &n){
+clifford c_grade(const clifford &C, const NumericVector &n){
     clifford out;
     for(size_t i=0 ; i < (size_t) n.length() ; ++i){
-        for(auto ic=C.begin() ; ic != C.end() ; ++ic){
-            const blade b = ic->first;
-            if(b.count() == (size_t) n[i]){
-                out[b] = ic->second;
+        for(const auto& [b, value] : C){
+            if(b.count() == static_cast<size_t>(n[i])){
+                out[b] = value;
             }
         }
     }
     return out;
+}
+
+bool any_negative(const IntegerVector &iv){
+    return std::any_of(iv.begin(), iv.end(), [](int x) { return x < 0; });
+}
+
+bool any_too_big(const IntegerVector &iv, const unsigned int &m){
+    for(const auto& value : iv){
+      if((unsigned int) value > m){
+      return(true);
+    }
+  }
+  return(false);
+}
+
+blade int_vec_to_blade(const IntegerVector iv, const int m){
+  blade b;
+  b.resize(m+1);
+  for(size_t j=0 ; j < (size_t) iv.size(); j++){
+    b[iv[j]] = 1;
+  }
+  return b;
 }
 
 NumericVector c_coeffs_of_blades(clifford C,
@@ -190,13 +208,16 @@ NumericVector c_coeffs_of_blades(clifford C,
                                  ){
     Rcpp::NumericVector out;
     for(size_t i=0 ; i < (size_t) B.size() ; ++i){
-        blade b;
-        b.resize(m[0]+1);  //off-by-one; note that this code also appears in prepare()
         const IntegerVector iv = B[i];
-        for(size_t j=0 ; j < (size_t) iv.size(); j++){
-            b[iv[j]] = 1;
-        }
-        out.push_back(C[b]);
+
+	if(any_negative(iv)){
+	  throw std::range_error("problem in clifford.h, c_coeffs_of_blades(): cannot access negative elements of a bitset");
+	}
+	if(any_too_big(iv, m[0])){
+	  out.push_back(0);
+	} else {
+	  out.push_back(C[int_vec_to_blade(iv,m[0])]);
+	}
     }
     return out;
 }
@@ -208,12 +229,12 @@ bool fatdotchooser          (const blade b1, const blade b2){return ((( b1 & ~b2
 bool lefttickchooser        (const blade b1, const blade b2){return ( ( b1 & ~b2).count() == 0)                                                                   ;}
 bool righttickchooser       (const blade b1, const blade b2){return ( (~b1 &  b2).count() == 0)                                                                   ;}
 
-clifford c_geometricprod(const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &geometricproductchooser);}
-clifford outerprod      (const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &outerproductchooser    );}
-clifford innerprod      (const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &innerproductchooser    );}
-clifford fatdotprod     (const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &fatdotchooser          );}
-clifford lefttickprod   (const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &lefttickchooser        );}
-clifford righttickprod  (const clifford C1, const clifford C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &righttickchooser       );}
+clifford c_geometricprod(const clifford &C1, const clifford &C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &geometricproductchooser);}
+clifford outerprod      (const clifford &C1, const clifford &C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &outerproductchooser    );}
+clifford innerprod      (const clifford &C1, const clifford &C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &innerproductchooser    );}
+clifford fatdotprod     (const clifford &C1, const clifford &C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &fatdotchooser          );}
+clifford lefttickprod   (const clifford &C1, const clifford &C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &lefttickchooser        );}
+clifford righttickprod  (const clifford &C1, const clifford &C2, const NumericVector &signature){ return c_general_prod(C1, C2, signature, &righttickchooser       );}
 
 clifford overwrite(clifford C1, const clifford C2){  // C1[] <- C2
     for(auto i=C2.begin(); i != C2.end(); ++i){
@@ -222,7 +243,7 @@ clifford overwrite(clifford C1, const clifford C2){  // C1[] <- C2
     return C1;
 }
 
-clifford c_power(const clifford C, const NumericVector &power, const NumericVector &signature){  // p for power
+clifford c_power(const clifford &C, const NumericVector &power, const NumericVector &signature){  // p for power
     clifford out;
     unsigned int p = power[0];
 
@@ -238,7 +259,7 @@ clifford c_power(const clifford C, const NumericVector &power, const NumericVect
     return out;
 }
 
-clifford cartan(const clifford C, const NumericVector &n){ // Appendix B of Hitzer and Sangwine: Cl(p,q) -> cl(p-4,q+4)
+clifford cartan(const clifford &C, const NumericVector &n){ // Appendix B of Hitzer and Sangwine: Cl(p,q) -> cl(p-4,q+4)
     clifford out;
 
     for (auto ic=C.begin(); ic != C.end(); ++ic){
@@ -271,7 +292,7 @@ clifford cartan(const clifford C, const NumericVector &n){ // Appendix B of Hitz
     return out;
 }
 
-clifford cartan_inverse(const clifford C, const NumericVector &n){ // Appendix B of Hitzer and Sangwine: Cl(p,q) -> cl(p+4,q-4)
+clifford cartan_inverse(const clifford &C, const NumericVector &n){ // Appendix B of Hitzer and Sangwine: Cl(p,q) -> cl(p+4,q-4)
     clifford out;
 
     for (auto ic=C.begin(); ic != C.end(); ++ic){

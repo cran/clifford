@@ -13,12 +13,10 @@ export("%_|%")
 export("%|_%")
 
 
-importFrom(Rcpp, evalCpp)
+importFrom("Rcpp", "evalCpp")
 importFrom("utils", "capture.output")
 importFrom("stats", "rnorm")
 importFrom("partitions", "allbinom")
-
-import(mathjaxr)
 
 importFrom("disordR","disord")
 importFrom("disordR","elements")
@@ -27,10 +25,14 @@ importFrom("disordR","is.disord")
 importFrom("disordR","consistent")
 importFrom("disordR","%in%")
 importFrom("disordR","lapply")
+importFrom("disordR","sort")
 
 importFrom("magrittr", "%<>%")
 
 importFrom("methods","setOldClass")
+
+importClassesFrom("freealg", "dot")
+importMethodsFrom("freealg", "[")
 
 S3method("[", clifford)
 S3method("[<-", clifford)
@@ -55,5 +57,8 @@ S3method("as.character", clifford)
 S3method("print",summary.clifford)
 S3method("summary",clifford)
 S3method("as.vector",clifford)
+S3method("Re",clifford)
+S3method("Im",clifford)
+S3method("is.zero",clifford)
 
 S3method(print,sigobj)

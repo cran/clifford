@@ -1,0 +1,130 @@
+\documentclass{article}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{amssymb}
+\newcommand{\cliff}[1]{\ensuremath{C\ell\left(#1\right)}}
+\newcommand{\ei}[1]{\ensuremath{{\bf e}_{#1}}}
+\begin{document}
+
+Manuscript Number: AACA-24-00133
+
+\section*{Rebuttal to reviewers' comments}
+
+Below, I reproduce the comments made to me on 23 March 2025.  I have
+retrofitted the email to \LaTeX, and made minor changes to the
+typesetting, but have not changed the sense of the comments.  Replies
+to the issues, and my own observations and general comments, are in
+\textcolor{blue}{blue}.  I have indicated changes to the manuscript
+where appropriate, which also appear in \textcolor{blue}{blue}.\\
+
+\vspace*{1cm}
+
+\noindent\textcolor{blue}{{\bf Executive Summary.\ \ } All the
+  comments are perfectly reasonable and I have implemented them to the
+  best of my ability.  I believe the manuscript is much improved as a
+  result, and recommend it to you.}
+\vspace*{1cm}
+
+\begin{itemize}
+\item give more details about the data structure and products.  For
+  example, how the author's data structure handle $k$-vectors,
+  $k$-blades, general multivectors with a focus on computational and
+  memory complexity.  This is important to know for the GA
+  implementation community.
+
+\textcolor{blue}{Discussion added at the end of section 2.  In short,
+  insertion, deletion, and lookup are all $\mathcal{O}(\log n)$
+  operations and I interpret this for $k$-vectors as suggested by the
+  review.  I also give some $\mathcal{O}()$ results for geometric and
+  outer products as suggested.}
+
+\item give a comparison with state-of-the-art methods.  The author's
+  package is the only one written in R but it is not the only GA
+  implementation and it is not the only symbolic computation
+  package.  For example, other methods use the bitset representation of
+  blades (like Gaigen), this would be good to recall this in the
+  paper.  This comparison would provide valuable context and highlight
+  the package's contributions.
+
+\textcolor{blue}{Computational implementations of Clifford algebra are
+  legion.  I think the reviewer is directing me to interpret {\em symbolic
+  computation package} very much more broadly than I did in earlier
+  drafts.  This is fine.  I have added a short discussion to some of
+  the more germane implementations, including the three citations
+  [a-c] that the review suggests.}
+  
+\item add some experimental results on how to use the package e.g. in
+  computer graphics (discrete differential geometry) or physics or
+  statistics.  In the following paragraphs, I explain the above points
+  in more details
+
+\textcolor{blue}{Brief section on conformal geometry added, showing
+  how to use the package to identify the sphere that passes through
+  four given points}
+
+\item Section 2 should contain more details about the data structure
+  used: the potential problems of using an associative array (time
+  access).
+
+    \textcolor{blue}{Done.  The material is now part of section 3}
+
+\item Appendix B should not be in the appendix.  It is a valuable
+  addition to the Section 2.
+
+  \textcolor{blue}{Done}
+  
+\item The presented state-of-art methods should include other symbolic
+  implementation like Clifford implementation (Python), Galop..., see
+  [a,b].
+
+  \textcolor{blue}{Done}
+
+\item In section 2, "The package uses standard disordR discipline,
+  which efficiently exploits the fact that coefficients are stored as
+  an unordered map.  Full details are given in [6]".  The unordered
+  map data structure should be described, the reader should not have
+  to look at [6] to understand the authors multivector data
+  structure. Please complete this section.
+
+\textcolor{blue}{Done (although it made more sense to include it as an
+  appendix as the requisite concepts have to be developed first).}
+  
+\item Since the used data structure is an unordered map, the
+  computational cost of finding all the blades of a given grade is not
+  a $\mathcal{O}(\log(n))$ operation.  The author should add more
+  details about the time complexity of operations like computing the
+  outer products of a $k$-vector and a $k'$-vector.  These kind of
+  operations are often used in Conformal Geometric Algebra.
+
+\textcolor{blue}{Brief discussion added in section 2.  Finding all the
+  blades of a given grade can't possibly be less than $\mathcal{O}(n)$
+  in worst-case.  Computing the outer product of a $k$-vector and a
+  $k'$-vector is, trivially, $\mathcal{O}(n^2\max(k,k'))$}
+  
+\item About Section 8, the author could give an example of an
+  application in either differential geometry/CG/CV and how it is
+  written with clifford, see [c,d].
+
+  \textcolor{blue}{Done}
+
+\end{itemize}
+
+\section*{References}
+
+\begin{description}
+\item{[a]} \url{https://github.com/ga/awesome-geometric-algebra}
+\item{[b]} Hildenbrand, D., Pitt, J., \& Koch, A. (2010).
+  Gaalop---high performance parallel computing based on conformal
+  geometric algebra.  Geometric Algebra Computing: in Engineering and
+  Computer Science, 477-494.
+\item{[c]} Breuils, S., Nozick, V., Sugimoto, A., \& Hitzer,
+  E. (2018).  Quadric conformal geometric algebra of
+  $\mathbb{R}^{9,6}$.  Advances in Applied Clifford Algebras, 28,
+  1-16.
+\item{[d]} Hildenbrand, D. (2012, September).  Foundations of geometric
+  algebra computing.  In AIP Conference Proceedings (Vol. 1479, No. 1,
+  pp. 27-30).  American Institute of Physics.
+\end{description}
+
+\end{document}

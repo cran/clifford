@@ -1,9 +1,15 @@
 \name{print}
 \alias{print.clifford}
+\alias{print.cliff}
 \alias{as.character}
 \alias{as.character.clifford}
 \alias{catterm}
 \alias{basissep}
+\alias{print_clifford}
+\alias{print_clifford_default}
+\alias{print_clifford_quaternion}
+\alias{print_clifford_pauli}
+\alias{print_special}
 \title{Print clifford objects}
 \description{Print methods for Clifford algebra}
 \usage{
@@ -22,28 +28,50 @@ catterm(a)
 The print method does not change the internal representation of a
 \code{clifford} object, which is a two-element list, the first of which
 is a list of integer vectors representing terms, and the second is a
-numeric vector of coefficients.
+numeric vector of coefficients.  The print method has special
+dispensation for the zero clifford object.
 
-The print method is sensitive to the value of option \code{separate}.
-If \code{FALSE} (the default), the method prints in a compact form, as
-in \code{e_134}.  The indices of the basis vectors are separated with
-option \code{basissep} which is usually \code{NULL} but if \eqn{n>9},
-then setting \code{options("basissep" = ",")} might look good as it will
-print \code{e_10,11,12} instead of \code{e_101112}.  If \code{separate}
-is \code{TRUE}, the method prints the basis vectors separately, as in
-\code{e1 e3 e4}.
+The print method is sensitive to the value of options \code{separate}
+and \code{basissep}.  If option \code{separate} is \code{FALSE} (the
+default), the method prints the basis blades in a compact form, as in
+\dQuote{\code{e_134}}.  The indices of the basis vectors are separated
+with the value of option \code{basissep} which is usually \code{NULL};
+but if \eqn{n>9}, then setting option \code{basissep} to a comma
+(\dQuote{\code{,}}) might look good as it will print \code{e_10,11,12}
+instead of \code{e_101112}:
 
-Function \code{as.character.clifford()} is also sensitive to these
-options.  The print method has special dispensation for length-zero
-clifford objects.  Function \code{catterm()} is a low-level helper
-function.
+\preformatted{options("basissep" = ",")}
+
+If option \code{separate} is \code{TRUE}, the method prints the basis
+vectors separately, as in \code{e10 e11 e12}:
+
+\preformatted{options("separate" = TRUE)}
+
+Function \code{catterm()} is a low-level helper function, used in the
+print method, coercion to character, and also in function
+\code{getcoeffs()} to set the names of its output.  It takes an integer
+vector like \code{c(1,5,6)} and returns a representation of the
+corresponding basis blade, in this case \dQuote{\code{e_156}}.  Function
+\code{catterm()} is where options \code{basissep} and \code{separate}
+are processed.  Special dispensation is needed for length-zero vectors,
+for which the empty string is returned.  This is needed to ensure that
+the constant term (which has a basis blade of \code{numeric(0)}) is
+treated appropriately.  See also \code{list_modifier()} which deals with
+this issue.
+
+Experimental bespoke print method \code{print_clifford_quaternion()} and
+\code{print_clifford_pauli()} is included.  This are executed if option
+\code{clifford_print_special} is \code{quaternion}; if \code{NULL}, then
+\code{print_clifford_default()} is used.  It is straightforward to add
+further bespoke print methods if needed (modify
+\code{print.clifford()}).
 
 }
-\seealso{\code{\link{clifford}}}  
+\seealso{\code{\link{clifford}}}
 \examples{
 
-a <- rcliff(d=15,g=9)
-a   # incomprehensible
+a <- rclifff(9)
+a   # default print method incomprehensible
 
 options("separate" = TRUE)
 a    # marginally better
@@ -53,8 +81,17 @@ options("separate" = FALSE)
 options(basissep=",")
 a    #  clearer; YMMV
 
-options(basissep = NULL)  # restore default
+options(basissep = NULL, maxdim=NULL)  # restore default
 
+options("maxdim" = 3)
+signature(3)
+a <- clifford(list(0,c(1,2),c(1,3),c(2,3)),6:9)
+a
 
+options("clifford_print_special" = "quaternion")
+a
 
+options("maxdim" = NULL)
+options("clifford_print_special" = NULL)
+signature(Inf)
 }

@@ -1,4 +1,5 @@
 test_that("Test suite aaa.R",{
+    options(maxdim=NULL) # default
     expect_silent(as.clifford(0))
     expect_silent(as.clifford(0) + as.clifford(3))
     expect_silent(as.clifford(3) + as.clifford(0))
@@ -71,12 +72,18 @@ test_that("Test suite aaa.R",{
     A <- clifford(list(1,1:2,1:3),1:3)
     B <- clifford(list(1:2,1:6),c(44,45))
 
+    expect_error(A[-1])
+    expect_true(A[c(1,4)] == 0)
+    expect_true(A[coeffs(A)>2] == clifford(list(1:3),3))
+
     expect_error(A[B])
     expect_silent(A[1,c(1,3,4)])
     expect_silent(A[2:3, 4] <- 99)
     expect_silent(A[] <- B)
     expect_silent(A[] <- 3)
 
+    expect_true(A[disord(list(1,1:2)),1:3] == A[disord(list(1,1:2))])
+    
     expect_true(is.1vector(clifford(list(1,2,3),1:3)))
 
     A <- clifford(list(1,1:2,1:3),1:3)
@@ -87,6 +94,11 @@ test_that("Test suite aaa.R",{
     expect_true(A == clifford(list(1,1:2,1:3),c(20,2,3)))
     A[1] <- 0
     expect_true(A == clifford(list(1:2,1:3),2:3))
+
+
+    A <- 5 + clifford(list(1,1:2,1:3),1:3)
+    expect_true (is.clifford(A[coeffs(A)>4,drop=FALSE]))
+    expect_false(is.clifford(A[coeffs(A)>4,drop=TRUE ]))
 
     A <- clifford(list(1,1:2,1:3),1:3)
     A[1,1:2] <- 33
@@ -106,7 +118,10 @@ test_that("Test suite aaa.R",{
     coeffs(A) <- 0   # can we change the zero object?
     expect_true(is.zero(A))
     
-    
+    A <- clifford(list(1,1:2,1:3),1:3)+3
+    A[0,1:6] <- 7
+    expect_true(const(A) == 7)
+    expect_true(const(A[list(0,4:8)]) == 7)
     
     jj <- clifford(list(1,1:2,1:3,1:4),1:4)
     expect_true(getcoeffs(jj,list(1:2))==2)
@@ -117,7 +132,7 @@ test_that("Test suite aaa.R",{
     expect_false(as.clifford(NULL) == as.clifford(1))
     expect_true(as.clifford(NULL) != as.clifford(1))
     expect_true(nbits(jj) == 4)
-    expect_error(jj^jj)
+    expect_silent(jj^jj)
     expect_error(jj^-1)
 
     expect_true(const(jj) == 0)
@@ -138,12 +153,10 @@ test_that("Test suite aaa.R",{
 
     
     expect_true(is.pseudoscalar(as.clifford(0)))
-    expect_true(is.pseudoscalar(as.clifford(1)))
-    expect_true(is.pseudoscalar(pseudoscalar(1)))
-    expect_true(is.pseudoscalar(pseudoscalar(2)))
-    expect_true(is.pseudoscalar(pseudoscalar(3)))
-    expect_false(is.pseudoscalar(1+pseudoscalar(3)))
 
+    options(maxdim=5)
+    expect_true(is.pseudoscalar(pseudoscalar()))
+    options(maxdim = NULL) # restore default
 
     expect_equal(Mod(as.clifford(0)),0)
     expect_equal(Mod(as.clifford(1)),1)
@@ -176,11 +189,21 @@ test_that("Test suite aaa.R",{
     expect_false(is.antivector(allcliff(2)))
     expect_false(is.antivector(allcliff(3)))
 
-    expect_false(is.antivector(pseudoscalar(3),include.pseudoscalar=FALSE))
-    expect_true (is.antivector(pseudoscalar(3),include.pseudoscalar=TRUE ))
+    options(maxdim=3)
+    expect_false(is.antivector(pseudoscalar(),include.pseudoscalar=FALSE))
+    expect_true (is.antivector(pseudoscalar(),include.pseudoscalar=TRUE ))
+    options(maxdim=NULL)
 
     expect_visible(as.character(as.clifford(0)))
     expect_true(as.character(as.clifford(0)) == "0")
     expect_true(as.character(as.clifford(4)) == "4")
-     
+
+    options(maxdim=4)
+    expect_silent(e(1))
+    expect_silent(e(2))
+    expect_silent(34+e(1:4))
+    expect_error(e(5))
+    expect_error(1+e(6))
+    options(maxdim=NULL)
+
 })

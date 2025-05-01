@@ -9,6 +9,10 @@
         return(s)
     } else { # p not missing, set signature
         s <- c(p,q)
+        m <- getOption("maxdim")
+        if(!is.null(m)){
+          if(p+q > m){stop("signature requires p+q <= maxdim")}
+        }
         p <- min(s[1], .Machine$integer.max)
         q <- min(s[2], .Machine$integer.max)
         stopifnot(is_ok_sig(s))
@@ -25,11 +29,13 @@
         } else if(s[2] == .Machine$integer.max){
             options("prompt" = paste("Cl(",s[1],",Inf) > ",sep=""))
         } else if(all(s==0)){
-            options("prompt" = "Grassman > ")
+            options("prompt" = "Grassmann > ")
         } else {
             options("prompt" = paste("Cl(", s[1],",", s[2],") > ",sep=""))
         }
-    } 
+    } else {
+        options("prompt" = "> ")
+    }
 }
 
 `print.sigobj` <- function(x,...){
@@ -98,11 +104,13 @@ maxyterm <- function(C1,C2=as.clifford(0)){
     } else if (.Generic == "-") {
             return(clifford_plus_clifford(as.clifford(e1),clifford_negative(as.clifford(e2))))
     } else if (.Generic == "^") {
-      if(lclass && !rclass){
+      if(lclass && rclass){
+        return(wedge(e1,e2)) # S^S == S%^% S
+      } else if(lclass && !rclass){
         return(clifford_power_scalar(e1,e2)) # S^n
-        } else {
-            stop("Generic '^' not implemented in this case")
-        }
+      } else {
+        stop("Generic '^' not implemented in this case")
+      }
     } else if (.Generic == "==") {
         if(lclass || rclass){
             return(clifford_eq_clifford(as.clifford(e1),as.clifford(e2)))
@@ -118,25 +126,15 @@ maxyterm <- function(C1,C2=as.clifford(0)){
     }
 }
 
-`clifford_negative` <- function(C){
-    if(is.zero(C)){
-        return(C)
-    } else {
-        return(clifford(terms(C),-coeffs(C)))
-    }
-}
+`clifford_negative` <- function(C){ clifford(terms(C),-coeffs(C)) }
 
 `geoprod` <- function(C1,C2){
-    if(is.zero(C1) || is.zero(C2)){
-    return(as.clifford(0))
-  } else {
-    return(as.clifford(c_multiply(
+    as.clifford(c_multiply(
         L1  = terms(C1), c1 = coeffs(C1),
         L2  = terms(C2), c2 = coeffs(C2),
         m   = maxyterm(C1,C2),
         sig = signature()
-    )))
-  }
+    ))
 }
 
 `clifford_times_scalar` <- function(C,x){
@@ -144,7 +142,7 @@ maxyterm <- function(C1,C2=as.clifford(0)){
 }
 
 `clifford_inverse` <- function(C){
-    if(all(signature()==0)){stop("inverses not defined for Grassman algebra")}
+    if(all(signature()==0)){stop("inverses not defined for Grassmann algebra")}
 
     if((all(grades(C)==1)) || is.pseudoscalar(C)){
         return(clifford_times_scalar(Conj(C),1/eucprod(C)))
@@ -157,17 +155,11 @@ maxyterm <- function(C1,C2=as.clifford(0)){
 }
 
 `clifford_plus_clifford` <- function(C1,C2){
-    if(is.zero(C1)){
-        return(C2)
-    } else if(is.zero(C2)){
-        return(C1)
-    } else {
-        return(as.clifford(c_add(
-      L1 = terms(C1), c1 = coeffs(C1),
-      L2 = terms(C2), c2 = coeffs(C2),
-      m  = maxyterm(C1,C2)
-      )))
-    }
+    as.clifford(c_add(
+        L1 = terms(C1), c1 = coeffs(C1),
+        L2 = terms(C2), c2 = coeffs(C2),
+        m  = maxyterm(C1,C2)
+    ))
 }
 
 clifford_power_scalar <- function(C,n){
@@ -197,32 +189,23 @@ clifford_power_scalar <- function(C,n){
 }
 
 `wedge` <- function(C1,C2){
-    C2 <- as.clifford(C2)
-    if(is.zero(C1) || is.zero(C2)){
-    return(as.clifford(0))
-  } else {
-    return(as.clifford(c_outerprod(
+    as.clifford(c_outerprod(
         L1  = terms(C1), c1 = coeffs(C1),
         L2  = terms(C2), c2 = coeffs(C2),
         m   = maxyterm(C1,C2),
         sig = signature()
-    )))
-  }
+    ))
 }
 
 `cliffdotprod` <- function(C1,C2){
     C1 <- as.clifford(C1)
     C2 <- as.clifford(C2)
-    if(is.zero(C1) || is.zero(C2)){
-    return(as.clifford(0))
-  } else {
-    return(as.clifford(c_innerprod(
+    as.clifford(c_innerprod(
         L1  = terms(C1), c1 = coeffs(C1),
         L2  = terms(C2), c2 = coeffs(C2),
         m   = maxyterm(C1,C2),
         sig = signature()
-    )))
-  }
+    ))
 }
 
 `cross` <- function(C1,C2){(C1*C2-C2*C1)/2}
@@ -231,46 +214,34 @@ star <- scalprod
 `fatdot` <- function(C1,C2){
     C1 <- as.clifford(C1)
     C2 <- as.clifford(C2)
-    if(is.zero(C1) || is.zero(C2)){
-    return(as.clifford(0))
-  } else {
     return(as.clifford(c_fatdotprod(
         L1  = terms(C1), c1 = coeffs(C1),
         L2  = terms(C2), c2 = coeffs(C2),
         m   = maxyterm(C1,C2),
         sig = signature()
     )))
-  }
 }
 
 `lefttick` <- function(C1,C2){
     C1 <- as.clifford(C1)
     C2 <- as.clifford(C2)
-    if(is.zero(C1) || is.zero(C2)){
-    return(as.clifford(0))
-  } else {
     return(as.clifford(c_lefttickprod(
         L1  = terms(C1), c1 = coeffs(C1),
         L2  = terms(C2), c2 = coeffs(C2),
         m   = maxyterm(C1,C2),
         sig = signature()
     )))
-  }
 }
 
 `righttick` <- function(C1,C2){
     C1 <- as.clifford(C1)
     C2 <- as.clifford(C2)
-    if(is.zero(C1) || is.zero(C2)){
-    return(as.clifford(0))
-  } else {
     return(as.clifford(c_righttickprod(
         L1  = terms(C1), c1 = coeffs(C1),
         L2  = terms(C2), c2 = coeffs(C2),
         m   = maxyterm(C1,C2),
         sig = signature()
     )))
-  }
 }
 
 "%.%" <- function(C1,C2){UseMethod("%.%")}

@@ -1,9 +1,9 @@
 `clifford` <- function(terms,coeffs=1){
-    stopifnot(is_ok_clifford(terms,coeffs))
+    terms <- list_modifier(terms)
     terms <- elements(terms)
     coeffs <- elements(coeffs)
     if(length(coeffs)==1){coeffs <- coeffs+numeric(length(terms))}
-
+    stopifnot(is_ok_clifford(terms,coeffs))
     if(!isFALSE(getOption("warn_on_repeats")) & anyDuplicated(terms)>0){
         warning("repeated element in terms")
     }
@@ -18,22 +18,26 @@ setOldClass("clifford")
 `terms` <- function(x){disord(x[[1]], hashcal(x))}  # accessor methods start ...
 `coeffs` <- function(x){ disord(x[[2]],hashcal(x))}  # ... continue ...
 `getcoeffs` <- function(C,B){                     # ... accessor methods end
+    out <- 
     c_getcoeffs(
         L = terms(C),
         c = coeffs(C),
         m = maxyterm(C),
-        B = B)
+        B = list_modifier(B))
+    names(out) <- lapply(B,catterm)
+    return(out)
 }
 
 `const` <- function(C,drop=TRUE){
+  if(is.numeric(C)){return(C[1])}
   out <- getcoeffs(C,list(numeric(0)))
   if(drop){
-    return(out)
+      names(out) <- NULL
+      return(out)
   } else {
     return(as.clifford(out))
   }
 }
-
 
 `is.1vector` <- function(x){all(grades(x)==1)}
 `is.basisblade` <- function(x){ (nterms(x)==1) || is.scalar(x) }
@@ -72,11 +76,20 @@ setOldClass("clifford")
     }
 
     terms <- elements(terms)
+    d <- getOption("maxdim")
+    if(!is.null(d)){
+      jj <- c(elements(terms),recursive=TRUE)
+      if((length(jj)>0) && any(jj>d)){
+        stop("option maxdim exceeded")
+      }
+    }
+
     coeffs <- elements(coeffs)
 
     stopifnot(is.list(terms))
   
     term_elements <- c(terms,recursive = TRUE)
+    stopifnot(length(coeffs) == length(terms))
 
 
     if(!is.null(term_elements)){
@@ -114,14 +127,20 @@ setOldClass("clifford")
 `is.clifford` <- function(x){inherits(x,"clifford")}
 
 `nterms` <- function(x){length(coeffs(x))}
-`is.zero` <- function(C){
-    if(is.clifford(C)){
-        out <- nterms(C)==0
+
+`is.zero.clifford` <- function(x){
+    if(is.clifford(x)){
+        out <- nterms(x)==0
     } else {
-        out <- C==0
+        out <- x==0
     }
     return(out)
 }
+
+setGeneric("is.zero",function(x){standardGeneric("is.zero")})
+setMethod("is.zero","clifford",is.zero.clifford)
+setMethod("is.zero","ANY",function(x){x==0})
+
 
 `is.real` <- function(C){length(c(elements(terms(C)),recursive=TRUE))==0}
 `is.scalar` <- is.real
@@ -148,15 +167,27 @@ setGeneric("dim")
 `scalar` <- function(x=1){clifford(list(numeric(0)),x)}
 `as.scalar` <- `scalar`
 `as.1vector` <- function(x){clifford(as.list(seq_along(x)),x)}
-`pseudoscalar` <- function(n,x=1){clifford(list(seq_len(n)),x)}
-`as.pseudoscalar` <- `pseudoscalar`
+`pseudoscalar` <- function(){
+  m <- getOption("maxdim")
+  if(is.null(m)){
+    stop('pseudoscalar requires a finite value of maxdim; set it with something like options(maxdim = 6)')
+  } else {
+    return(e(seq_len(m)))
+  }
+}
 `is.pseudoscalar` <- function(C){
+    if(!is.clifford(C)){return(FALSE)}
     if(is.zero(C)){return(TRUE)}
-    return(
-        is.clifford(C)         &&
-        (length(terms(C))==1) &&
-        all(terms(C)[[1]] == seq_along(terms(C)[[1]]))
-    )
+
+    m <- getOption("maxdim")
+    if(is.null(m)){
+      warning("maxdim not set")
+      return(FALSE)
+    }
+
+    jj <- terms(C)
+    if(length(jj) != 1){return(FALSE)}
+    return(all(jj[[1]] == seq_len(m)))
 }
 
 `antivector` <- function(v,n=length(v)){
@@ -166,7 +197,6 @@ setGeneric("dim")
 
 `as.antivector` <- function(v){antivector(v)}
 `is.antivector` <- function(C, include.pseudoscalar=FALSE){
-
   if(!is.homog(C)){return(FALSE)}
   if(include.pseudoscalar && is.pseudoscalar(C)){return(TRUE)}
   return(all(grades(C) == maxyterm(C)-1))
@@ -179,6 +209,7 @@ setGeneric("dim")
         return(clifford(list(n),x))
     }
 }
+
 `e` <- basis
 
 `rcliff` <- function(n=9,d=6,g=4,include.fewer=TRUE){
@@ -187,10 +218,16 @@ setGeneric("dim")
   } else {
     f <- function(...){g}
   }
-  out <- clifford(unique(replicate(n,sort(sample(d,f())),simplify=FALSE)),sample(n)-round(n/2))
+  terms <- unique(replicate(n,sort(sample(d,f())),simplify=FALSE))
+  coeffs <- sample(c(seq_len(n),-seq_len(n)),length(terms))
+  out <- clifford(terms,coeffs)
   if(include.fewer){out <- out + round(1+mean(abs(coeffs(out))))}
   return(out)
 } 
+
+`rclifff` <- function(n=100,d=20,g=10,include.fewer=TRUE){
+    rcliff(n=n,d=d,g=g,include.fewer=include.fewer)
+}
 
 `rblade` <- function(d=7,g=3){
     Reduce(`%^%`, sapply(seq_len(g), function(...) {
@@ -198,43 +235,17 @@ setGeneric("dim")
     }, simplify = FALSE))
 }
 
-`print.clifford` <- function(x,...){
-  cat("Element of a Clifford algebra, equal to\n")
-
-  out <- ""
-  tx <- terms(x)
-  cx <- coeffs(x)
-  for(i in seq_along(tx)){
-    co <- elements(cx)[i]
-    if(co>0){
-      pm <- " + " # pm = plus or minus
-    } else {
-      pm <- " - "
-    }
-    co <- capture.output(cat(abs(co)))
-    jj <- catterm(elements(tx)[[i]])
-    out <- paste(out, pm, co, jj, sep="")
-  }
-  if(is.zero(x)){
-      out <- "the zero clifford element (0)"
-  } else if(is.scalar(x)){
-      out <- paste("scalar (",capture.output(cat(cx)),")")
-  }
-  cat(paste(strwrap(out, getOption("width")), collapse="\n"))
-  cat("\n")
-  return(x)
-}
-
 setGeneric("drop")
-setMethod("drop","clifford", function(x){
-    if(is.zero(x)){
-        return(0)
-    } else if(is.scalar(x)){
-        return(const(x))
-    } else {
-        return(x)
+setMethod("drop","clifford", function(x){drop_clifford(x)})
+
+`drop_clifford` <- function(x){
+    if(is.scalar(x)){ return(const(x)) }
+    if(!is.null(getOption("maxdim"))){
+        if(is.pseudoscalar(x)){return(coeffs(x))
+        }
     }
-})
+    return(x)
+}
 
 `grade` <- function(C,n,drop=TRUE){
   C <- as.clifford(C)
@@ -244,8 +255,17 @@ setMethod("drop","clifford", function(x){
 }
 
 `grade<-` <- function(C,n,value){
-    coeffs(C)[grades(C) %in% n] <- value
-    return(C)
+    if(is.clifford(value)){
+        if(all(grades(value) %in% n)){
+            grade(C,n) <- 0
+            return(C + value)
+        } else {
+            stop("grade mismatch")
+        }
+    } else {
+        coeffs(C)[grades(C) %in% n] <- value
+        return(C)
+    }
 }
 
 `is.homog` <- function(C){
@@ -403,4 +423,16 @@ setMethod("drop","clifford", function(x){
 }
 
 `horner` <- function(P,v){Reduce(v, right=TRUE, f=function(a,b){b*P + a})}
+
+setOldClass("clifford")
+setMethod("[", signature(x="dot",i="clifford",j="ANY"),
+          function(x,i,j,drop){
+              j <- as.clifford(j)
+              return((i*j-j*i)/2)
+          })
+
+
+setGeneric("sort")
+setGeneric("lapply")
+
 

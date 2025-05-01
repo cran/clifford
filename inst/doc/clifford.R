@@ -78,15 +78,15 @@ x*y
 
 
 ###################################################
-### code chunk number 12: grassmanalgebra
+### code chunk number 12: grassmannalgebra
 ###################################################
-signature(0,0)  # specify null inner product
+signature(0,0) # specify null inner product
 
 
 ###################################################
-### code chunk number 13: clifford.Rnw:334-335
+### code chunk number 13: clifford.Rnw:338-339
 ###################################################
-is.zero(e(5)^2)     # should be TRUE
+e(5)^2 == 0    # cannot use is.zero() here because the jordan package masks clifford::is.zero()
 
 
 ###################################################
@@ -104,13 +104,13 @@ signature(Inf)
 
 
 ###################################################
-### code chunk number 16: clifford.Rnw:392-393
+### code chunk number 16: clifford.Rnw:396-397
 ###################################################
 e(53)^2
 
 
 ###################################################
-### code chunk number 17: clifford.Rnw:415-419
+### code chunk number 17: clifford.Rnw:419-423
 ###################################################
 (A <- rcliff())
 (B <- rcliff())
@@ -119,25 +119,25 @@ A %|_% B
 
 
 ###################################################
-### code chunk number 18: clifford.Rnw:425-426
+### code chunk number 18: clifford.Rnw:429-430
 ###################################################
 e(2) %_|% e(1)*e(2)
 
 
 ###################################################
-### code chunk number 19: clifford.Rnw:432-433
+### code chunk number 19: clifford.Rnw:436-437
 ###################################################
 e(2) %_|% (e(1)*e(2))
 
 
 ###################################################
-### code chunk number 20: clifford.Rnw:438-439
+### code chunk number 20: clifford.Rnw:442-443
 ###################################################
 e(2) %_|% e(1:2)
 
 
 ###################################################
-### code chunk number 21: clifford.Rnw:455-459
+### code chunk number 21: clifford.Rnw:459-463
 ###################################################
 A <- rcliff();  B <- rcliff();  C <- rcliff()
 A %_|% (B %|_% C) == (A %_|% B) %|_% C

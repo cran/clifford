@@ -1,11 +1,13 @@
 \name{rcliff}
 \alias{rcliff}
+\alias{rclifff}
 \alias{rblade}
 \title{Random clifford objects}
 \description{Random Clifford algebra elements, intended as quick
   \dQuote{get you going} examples of \code{clifford} objects}
 \usage{
 rcliff(n=9, d=6, g=4, include.fewer=TRUE)
+rclifff(n=100,d=20,g=10,include.fewer=TRUE)
 rblade(d=7, g=3)
 }
 \arguments{
@@ -18,24 +20,25 @@ rblade(d=7, g=3)
     grades less than \code{g} (including a term of grade zero, that
     is, a scalar)}
 }
-\details{\loadmathjax
+\details{
 
   Function \code{rcliff()} gives a quick nontrivial Clifford object,
   typically with terms having a range of grades (see \file{grade.Rd});
   argument \code{include.fewer=FALSE} ensures that all terms are of the
-  same grade.
+  same grade.  Function \code{rclifff()} is the same but returns a more
+  complicated object by default.
 
   Function \code{rblade()} gives a Clifford object that is a
   \emph{blade} (see \file{term.Rd}).  It returns the wedge product of a
   number of 1-vectors, for example
-  \mjeqn{\left(e_1+2e_2\right)\wedge\left(e_1+3e_5\right)}{(e1+2e2)^(e1+3e5)}.
+  \eqn{\left(e_1+2e_2\right)\wedge\left(e_1+3e_5\right)}{(e1+2e2)^(e1+3e5)}.
   
   Perwass gives the following lemma:
 
-  Given blades \mjeqn{A_{\langle r\rangle}, B_{\langle s\rangle},
+  Given blades \eqn{A_{\langle r\rangle}, B_{\langle s\rangle},
     C_{\langle t\rangle}}{see PDF}, then
 
-  \mjdeqn{
+  \deqn{
     \langle
     A_{\langle r\rangle}
     B_{\langle s\rangle}
@@ -53,7 +56,7 @@ rblade(d=7, g=3)
 
   In the proof he notes in an intermediate step that 
 
-    \mjdeqn{
+    \deqn{
     \langle
     A_{\langle r\rangle}
     B_{\langle s\rangle}
@@ -79,7 +82,7 @@ rblade(d=7, g=3)
 
 }
 \author{Robin K. S. Hankin}
-\note{If the grade exceeds the dimensionality, \mjseqn{g>d}, then
+\note{If the grade exceeds the dimensionality, \eqn{g>d}, then
   the result is arguably zero; \code{rcliff()} returns an error.}
 \seealso{\code{\link{term}},\code{\link{grade}}}
 \examples{

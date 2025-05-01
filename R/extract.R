@@ -9,21 +9,25 @@ list_modifier <- function(B){
            } )
 }
 
-`[.clifford` <- function(C, index, ...){
+`[.clifford` <- function(C, index, ...,drop=FALSE){
     if(is.clifford(index)){
         stop("cannot extract a clifford; try A[terms(B)]")
     } else if(is.disord(index)){
         if(is.list(index)){
             dots <- elements(index)
         } else {
-            return(clifford(elements(terms(C)[index]),elements(coeffs(C)[index])))
+            out <- clifford(elements(terms(C)[index]),elements(coeffs(C)[index]))
+            if(drop){out <- drop(out)}
+            return(out)
         }
     } else if(is.list(index)){
         dots <- index
     } else {
         dots <- c(list(index),list(...))
     }
-    clifford(list_modifier(dots),getcoeffs(C,list_modifier(dots)))
+    out <- clifford(list_modifier(dots),getcoeffs(C,list_modifier(dots)))
+    if(drop){out <- drop(out)}
+    return(out)
 }  
 
 `[<-.clifford` <- function(C, index, ..., value){
@@ -41,7 +45,8 @@ list_modifier <- function(B){
             return(clifford(terms(C),value + numeric(length(coeffs(C)))))
         }
     } else {  # index supplied, dots interpreted as more terms
-        dots <- list_modifier(c(list(index),list(...)))
+        dots <- list_modifier(c(as.list(index),list(...)))
+        if(length(value) > 1){stop("replacement length > 1 not allowed")}
         if(value==0){
             jj <- clifford(dots,1)
             return(as.clifford(c_overwrite(
@@ -60,3 +65,12 @@ list_modifier <- function(B){
     }
 }
 
+
+setGeneric("Re")
+setGeneric("Im")
+
+`Re.clifford` <- function(z){const(z)}
+`Im.clifford` <- function(z){
+  const(z) <- 0
+  return(z)
+}
