@@ -1,7 +1,7 @@
 Package: clifford
 Type: Package
 Title: Arbitrary Dimensional Clifford Algebras
-Version: 1.1-0
+Version: 1.1-1
 Depends: R (>= 4.1.0)
 Authors@R: person(given=c("Robin", "K.", "S."), family="Hankin", role = c("aut","cre"), email="hankin.robin@gmail.com", comment = c(ORCID = "0000-0001-5982-0415"))
 Maintainer: Robin K. S. Hankin <hankin.robin@gmail.com>
@@ -26,8 +26,8 @@ URL: https://github.com/RobinHankin/clifford,
         https://robinhankin.github.io/clifford/
 BugReports: https://github.com/RobinHankin/clifford/issues
 NeedsCompilation: yes
-Packaged: 2025-05-01 07:36:13 UTC; rhankin
+Packaged: 2025-05-06 08:40:21 UTC; rhankin
 Author: Robin K. S. Hankin [aut, cre] (ORCID:
     <https://orcid.org/0000-0001-5982-0415>)
 Repository: CRAN
-Date/Publication: 2025-05-01 13:30:09 UTC
+Date/Publication: 2025-05-07 12:30:21 UTC
