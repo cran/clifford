@@ -149,6 +149,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
 div.csl-bib-body { }
 div.csl-entry {
 clear: both;
+margin-bottom: 0em;
 }
 .hanging div.csl-entry {
 margin-left:2em;
@@ -395,9 +396,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##     }
 ## }</code></pre>
 <p>To cite the <code>clifford</code> package in publications please use
-<span class="citation">Hankin (2025a)</span>. This short document
-discusses <code>signature()</code> in the <code>clifford</code> R
-package. As an example we might wish to work in <span class="math inline">\(\operatorname{Cl}(1,2)\)</span>:</p>
+<span class="citation">Hankin (<a href="#ref-hankin2025_clifford_rmd">2025a</a>)</span>. This short
+document discusses <code>signature()</code> in the <code>clifford</code>
+R package. As an example we might wish to work in <span class="math inline">\(\operatorname{Cl}(1,2)\)</span>:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">signature</span>(<span class="dv">1</span>,<span class="dv">2</span>)</span></code></pre></div>
 <p>Thus <span class="math inline">\(e_1^2=+1\)</span>, and <span class="math inline">\(e_2^2=e_3^2=-1\)</span>:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">drop</span>(<span class="fu">e</span>(<span class="dv">1</span>)<span class="sc">^</span><span class="dv">2</span>),<span class="fu">drop</span>(<span class="fu">e</span>(<span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span>),<span class="fu">drop</span>(<span class="fu">e</span>(<span class="dv">3</span>)<span class="sc">^</span><span class="dv">2</span>))</span></code></pre></div>
@@ -417,8 +418,9 @@ values of <span class="math inline">\(i\)</span>:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">e</span>(<span class="dv">5</span>)</span></code></pre></div>
 <pre><code>## Error in is_ok_clifford(terms, coeffs): option maxdim exceeded</code></pre>
 <p>The operation of <code>signature()</code> is modelled on the
-<code>sol()</code> function in the <code>lorentz</code> package <span class="citation">(Hankin 2025b)</span>. Thus, if given no arguments we
-return the signature:</p>
+<code>sol()</code> function in the <code>lorentz</code> package <span class="citation">(<a href="#ref-hankin2025_lorentz">Hankin
+2025b</a>)</span>. Thus, if given no arguments we return the
+signature:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">signature</span>()</span></code></pre></div>
 <pre><code>## [1] 1 2</code></pre>
 <p>However, the default value is to use an infinite signature which
@@ -437,11 +439,12 @@ specifically <code>.Machine$integer.max</code>:</p>
 <pre><code>## structure(c(2147483647, 0), class = &quot;sigobj&quot;)</code></pre>
 <div id="references" class="section level1 unnumbered">
 <h1 class="unnumbered">References</h1>
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-hankin2025_clifford_rmd" class="csl-entry">
 Hankin, R. K. S. 2025a. <span>“Clifford Algebra in <span>R</span>:
 Introducing the <span class="nocase">clifford</span> Package.”</span>
-<em>Advances in Applied Clifford Algebra</em>. https://doi.org/<a href="https://doi.org/10.1007/s00006-025-01403-9">https://doi.org/10.1007/s00006-025-01403-9</a>.
+<em>Advances in Applied Clifford Algebra</em> 35 (51).
+https://doi.org/<a href="https://doi.org/10.1007/s00006-025-01403-9">https://doi.org/10.1007/s00006-025-01403-9</a>.
 </div>
 <div id="ref-hankin2025_lorentz" class="csl-entry">
 ———. 2025b. <span>“Special Relativity in <span>R</span>: The Lorentz
