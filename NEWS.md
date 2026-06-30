@@ -1,3 +1,11 @@
+# clifford 1.2-0
+- C++-20 idiom
+
+
+# clifford 1.1-3
+- documentation tweaks
+
+
 # clifford 1.1-2
 - inclusion of AACA paper
 - code refactoring to include newer C++ features

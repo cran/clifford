@@ -15,9 +15,17 @@
 }
 
 setOldClass("clifford")
-`terms` <-  function(x){disord(x[[1]], hashcal(x))}  # accessor methods start ...
-`coeffs` <- function(x){disord(x[[2]], hashcal(x))}  # ... continue ...
-`getcoeffs` <- function(C, B){                       # ... accessor methods end
+`terms` <-  function(x){  # accessor methods start ...
+    x <- unclass(x)
+    disord(x[[1]], hashcal(x))
+}  
+
+`coeffs` <- function(x){  # ... continue ...
+    x <- unclass(x)
+    disord(x[[2]], hashcal(x))
+}
+
+`getcoeffs` <- function(C, B){ # ... accessor methods end
     out <- 
     c_getcoeffs(
         L = terms(C),
@@ -161,7 +169,7 @@ setGeneric("dim")
     } else {
         out <- unlist(lapply(terms(x), length))
     } 
-    return(disord(out, hashcal(x)))
+    return(disord(out, hashcal(unclass(x))))
 }
 
 `scalar` <- function(x=1){clifford(list(numeric(0)), x)}
@@ -229,10 +237,14 @@ setGeneric("dim")
     rcliff(n=n, d=d, g=g, include.fewer=include.fewer)
 }
 
-`rblade` <- function(d=7, g=3){
-    Reduce(`%^%`, sapply(seq_len(g), function(...) {
-        as.1vector(sample(1:5, d, replace=TRUE))
-    }, simplify = FALSE))
+`rblade` <- function(d=7, g=3, prod=TRUE){
+    out <- sapply(
+        seq_len(g),
+        function(...){as.1vector(sample(1:5, d, replace=TRUE))},
+        simplify = FALSE)
+
+    if(prod){out <- Reduce(wedge, out) }
+    return(out)
 }
 
 setGeneric("drop")
@@ -294,17 +306,19 @@ setMethod("drop","clifford", function(x){drop_clifford(x)})
 
 `Mod.clifford` <- function(z){sqrt(abs(eucprod(z)))}
 
-`is.even` <- function(C){all(grades(C)%%2==0)}
-`is.odd`  <- function(C){all(grades(C)%%2==1)}
+`is.even` <- function(C){all(grades(C)%%2 == 0)}
+`is.odd`  <- function(C){all(grades(C)%%2 != 0)}
 
 `evenpart` <- function(C){
     wanted <- which(unlist(lapply(elements(terms(C)), length))%%2==0)
     clifford(elements(terms(C))[wanted], coeffs=elements(coeffs(C))[wanted])
+    ## C[grades(C)%%2 == 0] looks good but fails tests/testthat/test_aam.R
 }
 
-`oddpart` <- function(C){
+ `oddpart` <- function(C){
     wanted <- which(unlist(lapply(elements(terms(C)), length))%%2==1)
     clifford(elements(terms(C))[wanted], coeffs=elements(coeffs(C))[wanted])
+    ## C[grades(C)%%2 == 1] looks good but fails tests/testthat/test_aam.R
 }
 
 `allcliff` <- function(n,grade){
@@ -361,31 +375,31 @@ setMethod("drop","clifford", function(x){drop_clifford(x)})
 }
 
 `gradesplus` <- function(x){
-    if(is.zero(x)){return(disord(numeric(0), hashcal(x)))}
+    if(is.zero(x)){return(disord(numeric(0), hashcal(unclass(x))))}
     p <- signature()[1]
-    return(disord(unlist(lapply(terms(x), function(o){sum(o <= p)})), hashcal(x)))
+    return(disord(unlist(lapply(terms(x), function(o){sum(o <= p)})), hashcal(unclass(x))))
 }
 
 `gradesminus` <- function(x){
-    if(is.zero(x)){return(disord(numeric(0), hashcal(x)))}
+    if(is.zero(x)){return(disord(numeric(0), hashcal(unclass(x))))}
     p <- signature()[1]
     q <- signature()[2]
     return(disord(unlist(lapply(terms(x),
                                 function(o){
                                     sum((o > p) & (o <= p+q))
                                 }
-                                )),hashcal(x)))
+                                )),hashcal(unclass(x))))
 }
 
 `gradeszero` <- function(x){
-    if(is.zero(x)){return(disord(numeric(0), hashcal(x)))}
+    if(is.zero(x)){return(disord(numeric(0), hashcal(unclass(x))))}
     p <- signature()[1]
     q <- signature()[2]
     return(disord(unlist(lapply(terms(x),
                                 function(o){
                                     sum(o > p+q)
                                 }
-                                )), hashcal(x)))
+                                )), hashcal(unclass(x))))
 }
 
 `first_n_last` <- function(x){

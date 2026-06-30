@@ -12,19 +12,18 @@
 
 using namespace Rcpp;
 
-typedef boost::dynamic_bitset<> blade;
-typedef std::map<blade, long double> clifford;
-typedef std::tuple<blade, int> blade_and_sign;
+using blade = boost::dynamic_bitset<>;
+using clifford = std::map<blade, long double>;
+using blade_and_sign = std::tuple<blade, int>;
 
-inline clifford remove_zeros(clifford C){
-    for(auto it = C.cbegin() ; it != C.end() ;){
+inline void remove_zeros(clifford& C){
+    for(auto it = C.begin() ; it != C.end() ;){
         if(it->second == 0){
             it = C.erase(it); //increments pointer
         } else {
             ++it; // increment anyway
         }
     }
-    return C;
 }
 
 clifford prepare(const List &L, const NumericVector &d, const NumericVector &m){
@@ -33,24 +32,33 @@ clifford prepare(const List &L, const NumericVector &d, const NumericVector &m){
     if(!((unsigned int) n == d.length())){
         throw std::range_error("in prepare(L,d,m) [file inst/clifford.h], L must be the same length as d");
     }
+
+    const size_t blade_size = m[0] + 1;
+    blade b;
+    b.resize(blade_size);
+
     for(size_t i=0 ; i<n ; i++){
         if(d[i] != 0){
-            Rcpp::IntegerVector iv = as<Rcpp::IntegerVector> (L[i]);
-            blade b;
-            b.resize(m[0]+1);  //off-by-one
+            const Rcpp::IntegerVector iv = L[i];
+            b.reset();
             for(unsigned int j=0 ; j < iv.size(); j++){
                 b[iv[j]] = 1;
             }
-            out[b] += d[i];  // the meat
+            auto [it, inserted] = out.try_emplace(b, d[i]);
+            if(!inserted){
+                it->second += d[i];
+            }
         } // if d[i] closes
     }  // i loop closes
-    return remove_zeros(std::move(out));
+
+    remove_zeros(out);
+    return out;
 }
 
-Rcpp::IntegerVector which(const blade b){ // takes a blade, returns which(blade)
+Rcpp::IntegerVector which(const blade& b){ // takes a blade, returns which(blade)
     Rcpp::IntegerVector out;
     for(unsigned int i=0 ; i<b.size() ; ++i){
-        if((bool) b[i]){
+        if(b[i]){
             out.push_back(i); // the meat; off-by-one here
         }
     }
@@ -58,21 +66,22 @@ Rcpp::IntegerVector which(const blade b){ // takes a blade, returns which(blade)
 }
 
 List Rblades(const clifford &C){  // takes a clifford object, returns a list of which(blades); used in retval()
-    List out;
+    List out(C.size());
+    size_t k=0;
 
-    for(auto ic = C.cbegin() ; ic != C.end() ; ++ic){
-        out.push_back(which(ic->first));
+    for(auto ic = C.cbegin() ; ic != C.cend() ; ++ic){
+        const blade& b = ic->first;
+        out[k++] = which(b);
     }
     return out;
 }
 
 NumericVector coeffs(const clifford &C){  // takes a clifford object, returns the coefficients
     NumericVector out(C.size());
-    unsigned int i = 0;
+    size_t i = 0;
 
-    for(auto ic = C.cbegin() ; ic != C.end() ; ++ic){
-        out[i] = ic->second;
-        i++;
+    for(auto ic = C.cbegin() ; ic != C.cend() ; ++ic){
+        out[i++] = ic->second;
     }
     return out;
 }
@@ -83,18 +92,21 @@ List retval(const clifford &C){  // used to return a list to R
                             );
 }
 
-clifford add_lowlevel(clifford cliff1, clifford cliff2){
+clifford add_lowlevel(const clifford &cliff1, const clifford& cliff2){
+    clifford out;
     if(cliff1.size() > cliff2.size()){ // #1 is bigger, so iterate through #2
+        out = cliff1;
         for(const auto& [blade2, value2] : cliff2 ){
-            cliff1[blade2] += value2;
+            out[blade2] += value2;
         }
-        return remove_zeros(std::move(cliff1));
-    } else {  // L2 is bigger
+    } else {
+        out = cliff2;
         for(const auto& [blade1, value1] : cliff1 ){
-            cliff2[blade1] += value1;
+            out[blade1] += value1;
         }
-        return remove_zeros(std::move(cliff2));
     }
+    remove_zeros(out);
+    return out;
 }
 
 blade_and_sign juxtapose(blade b1, blade b2, const NumericVector signature){//juxtaposes two blades, returns reduction and sign
@@ -150,21 +162,22 @@ clifford c_general_prod(const clifford &C1, const clifford &C2, const NumericVec
             }
         }
     }
-    return remove_zeros(std::move(out));
+    remove_zeros(out);
+    return out;
 }
 
-bool equal_lowlevel(clifford C1, clifford C2){
+bool equal_lowlevel(const clifford& C1, const clifford& C2){
     // modelled on spray_equality()
     if(C1.size() != C2.size()){
         return false;
     }
 
     for(const auto &[b1, value1] : C1 ){
-        if(C2[b1] != value1){
+        auto it = C2.find(b1);
+        if(it == C2.end() || it->second != value1){
             return false;
         }
     }
-
     return true;
 }
 
@@ -174,6 +187,7 @@ clifford grade_lowlevel(const clifford &C, const NumericVector &n){
         for(const auto& [b, value] : C){
             if(b.count() == static_cast<size_t>(n[i])){
                 out[b] = value;
+                break;
             }
         }
     }
@@ -184,7 +198,7 @@ bool any_negative(const IntegerVector &iv){
     return std::any_of(iv.begin(), iv.end(), [](int x) { return x < 0; });
 }
 
-bool any_too_big(const IntegerVector &iv, const unsigned int &m){
+bool any_too_big(const IntegerVector &iv, const unsigned int m){
     for(const auto& value : iv){
       if((unsigned int) value > m){
       return(true);
@@ -193,7 +207,7 @@ bool any_too_big(const IntegerVector &iv, const unsigned int &m){
   return(false);
 }
 
-blade int_vec_to_blade(const IntegerVector iv, const int m){
+blade int_vec_to_blade(const IntegerVector& iv, const int m){
   blade b;
   b.resize(m+1);
   for(size_t j=0 ; j < (size_t) iv.size(); j++){
@@ -244,17 +258,15 @@ clifford overwrite(clifford C1, const clifford C2){  // C1[] <- C2
 }
 
 clifford power_lowlevel(const clifford &C, const NumericVector &power, const NumericVector &signature){  // p for power
-    clifford out;
     unsigned int p = power[0];
 
     if(p<1){throw std::range_error("power cannot be <1");}
     if(p==1){
         return C;
-    } else {
-        out = C;
-        for( ; p>1; p--){
-            out = geometricprod_lowlevel(C,out, signature);
-        }
+    } 
+    clifford out = C;
+    for( ; p>1; p--){
+        out = geometricprod_lowlevel(C, out, signature);
     }
     return out;
 }
@@ -262,9 +274,9 @@ clifford power_lowlevel(const clifford &C, const NumericVector &power, const Num
 clifford cartan(const clifford &C, const NumericVector &n){ // Appendix B of Hitzer and Sangwine: Cl(p,q) -> cl(p-4,q+4)
     clifford out;
 
-    for (auto ic=C.begin() ; ic != C.end() ; ++ic){
+    const size_t o = n[0]-1; // "-1" so the numbers match; off-by-one
+    for (auto ic=C.cbegin() ; ic != C.cend() ; ++ic){
         blade c = ic->first;
-        const size_t o = n[0]-1; // "-1" so the numbers match; off-by-one
         if(c.size() < o+5){c.resize(o+5);}
         const blade b = c;
         const long double v = ic->second;
@@ -295,9 +307,9 @@ clifford cartan(const clifford &C, const NumericVector &n){ // Appendix B of Hit
 clifford cartan_inverse(const clifford &C, const NumericVector &n){ // Appendix B of Hitzer and Sangwine: Cl(p,q) -> cl(p+4,q-4)
     clifford out;
 
-    for (auto ic=C.begin(); ic != C.end(); ++ic){
+    const size_t o = n[0]-1; // "-1" so the numbers match
+    for (auto ic=C.cbegin(); ic != C.cend(); ++ic){
         blade c = ic->first;
-        const size_t o = n[0]-1; // "-1" so the numbers match
         if(c.size() < o+5){c.resize(o+5);}
         const blade b = c;
         const long double v = ic->second;
