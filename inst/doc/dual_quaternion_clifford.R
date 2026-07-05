@@ -1,6 +1,5 @@
 ## ----out.width='15%', out.extra='style="float:right; padding:10px"',echo=FALSE----
 knitr::include_graphics(system.file("help/figures/clifford.png", package = "clifford"))
-knitr::include_graphics(system.file("help/figures/onion.png", package = "onion"))
 
 ## ----setup, include=FALSE-----------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)

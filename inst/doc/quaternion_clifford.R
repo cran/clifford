@@ -5,7 +5,6 @@ library("onion")
 
 ## ----out.width='15%', out.extra='style="float:right; padding:10px"',echo=FALSE------------------------------
 knitr::include_graphics(system.file("help/figures/clifford.png", package = "clifford"))
-knitr::include_graphics(system.file("help/figures/onion.png", package = "onion"))
 
 ## -----------------------------------------------------------------------------------------------------------
 options(maxdim=3)  # paranoid safety measure
